@@ -4,9 +4,14 @@ from pathlib import Path
 import cv2
 import time
 import pillow_avif
-
+import logging
 # TODO: improve output file names
 # TODO: add support for "continue" processing, such that it does not re-render frames that already exist
+# TODO: implement a logging system
+
+logging.basicConfig(filename='process_mp4.log', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 def convert_png_to_avif(image_in):
     # convert image to AVIF format
@@ -60,7 +65,7 @@ def export_mp4_to_frames(mp4_path, frames_path):
         convert_png_to_avif(output_path)
         # print('Read a new frame: ', success)
         count += 1
-    print(f'\t Wrote {count-1} frames from {cam_name} to {frames_path}')
+    logger.info(f'Wrote {count} frames from {cam_name} to {frames_path}')
 
 
 def rotate_images(input_folder, output_folder, angle):
@@ -86,36 +91,28 @@ def multithreaded_video_processor(vid_list):
         executor.map(process_video_file, vid_list)
 
 
-# enable recusrive mutlthreaded processing
-# TODO: clean up the gather process
+if __name__ == '__main__':
 
-project_root = '/Users/spooky/Downloads/'
+    project_root = '/mnt/data/datasets/LA-data/'
 
-# export_mp4_to_frames(f'{project_root}camera_06-0002.mp4', project_root + '/cam_6_frames/')
+    # export_mp4_to_frames(f'{project_root}camera_06-0002.mp4', project_root + '/cam_6_frames/')
+    mp4_sources = []
+    model_sources = [f for f in os.listdir(project_root) if f.startswith('Model')]
+    for model in model_sources:
+        pose_sources = [f for f in os.listdir(f'{project_root}{model}/') if os.path.isdir(f'{project_root}{model}/{f}')]
+        for pose in pose_sources:
+            mp4_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith('.mp4')])
 
-mp4_sources = [f for f in os.listdir(project_root) if f.startswith('EXP_') and not f.endswith('_processed')]
-video_files = {}
-vid_list = []
-# accumulate files to process
-for project in mp4_sources:
-    mp4_source = f'{project_root}{project}/'
-    frames_dest = f'{project_root}{project}/frames/'
-    videos = [f for f in os.listdir(mp4_source) if f.endswith('.mp4')]
-    videos.sort()
-    video_files[project] = [mp4_source, frames_dest, videos]
+    for mp4 in mp4_sources:
+        print(f'{mp4}')
 
-for project, files in video_files.items():
-    print(f'Project: {project}')
-    for video in files[2]:
-        vid_list.append(f'{files[0]}{video}')
+    print("gather complete")
 
-print("gather complete")
-
-print('Multiprocessing Video Captures')
-start = time.time()
-try:
-    multithreaded_video_processor(vid_list)
-except BaseException as e:
-    print(e)
-end = time.time()
-print((end - start), 'seconds')
+    # print('Multiprocessing Video Captures')
+    # start = time.time()
+    # try:
+    #     multithreaded_video_processor(vid_list)
+    # except BaseException as e:
+    #     print(e)
+    # end = time.time()
+    # print((end - start), 'seconds')
