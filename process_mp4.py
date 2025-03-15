@@ -27,45 +27,45 @@ from pathlib import Path
 #     os.remove(image_in)
 
 
-# def export_mp4_to_frames(mp4_path, frames_path):
-#     # load the mp4 file, output whole frames rotated 90 degrees clockwise
-#     # frames will be AVIF format
-#     if not os.path.exists(frames_path):
-#         os.makedirs(frames_path)
-#     vidcap = cv2.VideoCapture(mp4_path)
-#     success, image = vidcap.read()
-#     count = 0
-#     try:
-#         pose_name = [t for t in os.path.basename(mp4_path).split('/') if t.startswith('EXP_')]
-#         pose_name = pose_name[0]
-#     except:
-#         pose_name = "unknown_pose"
-#     cam_name = os.path.basename(mp4_path).split('-')[0]
-#     # construct filename
-#     basename = os.path.basename(mp4_path).split('.')[0]
-#     while success:
-#         # pad frame number with zeros
-#         if len(str(count)) == 1:
-#             out_name = f'{basename}_0000{count}.png'
-#         elif len(str(count)) == 2:
-#             out_name = f'{basename}_000{count}.png'
-#         elif len(str(count)) == 3:
-#             out_name = f'{basename}_00{count}.png'
-#         elif len(str(count)) == 4:
-#             out_name = f'{basename}_0{count}.png'
-#         else:
-#             out_name = f'{basename}_{count}.png'
+def export_mp4_to_frames(mp4_path, frames_path):
+    # load the mp4 file, output whole frames rotated 90 degrees clockwise
+    # frames will be AVIF format
+    if not os.path.exists(frames_path):
+        os.makedirs(frames_path)
+    vidcap = cv2.VideoCapture(mp4_path)
+    success, image = vidcap.read()
+    count = 0
+    try:
+        pose_name = [t for t in os.path.basename(mp4_path).split('/') if t.startswith('EXP_')]
+        pose_name = pose_name[0]
+    except:
+        pose_name = "unknown_pose"
+    cam_name = os.path.basename(mp4_path).split('-')[0]
+    # construct filename
+    basename = os.path.basename(mp4_path).split('.')[0]
+    while success:
+        # pad frame number with zeros
+        if len(str(count)) == 1:
+            out_name = f'{basename}_0000{count}.png'
+        elif len(str(count)) == 2:
+            out_name = f'{basename}_000{count}.png'
+        elif len(str(count)) == 3:
+            out_name = f'{basename}_00{count}.png'
+        elif len(str(count)) == 4:
+            out_name = f'{basename}_0{count}.png'
+        else:
+            out_name = f'{basename}_{count}.png'
 
-#         output_path = os.path.join(frames_path, out_name)
-#         # print(f'Exporting {out_name} to {frames_path}')
-#         # image rotate 90 degrees clockwise
-#         image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-#         cv2.imwrite(output_path, image)
-#         success, image = vidcap.read()
-#         convert_png_to_avif(output_path)
-#         # print('Read a new frame: ', success)
-#         count += 1
-#     logger.info(f'Wrote {count} frames from {cam_name} to {frames_path}')
+        output_path = os.path.join(frames_path, out_name)
+        # print(f'Exporting {out_name} to {frames_path}')
+        # image rotate 90 degrees clockwise
+        image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+        cv2.imwrite(output_path, image)
+        success, image = vidcap.read()
+        convert_png_to_avif(output_path)
+        # print('Read a new frame: ', success)
+        count += 1
+    logger.info(f'Wrote {count} frames from {cam_name} to {frames_path}')
 
 
 # def rotate_images(input_folder, output_folder, angle):
@@ -79,9 +79,10 @@ from pathlib import Path
 #             rotated_img.save(os.path.join(output_folder, filename))
 
 
-# def process_video_file(video_file_path):
-#     frame_out = os.path.dirname(video_file_path) + '/frames/'
-#     export_mp4_to_frames(video_file_path, frame_out)
+def process_video_file(video_file_path):
+    frame_out = mp4.replace('/LA-data/', '/LA-data-frames/')
+    frame_out = frame_out.replace('.mp4', '_00000.avif')
+    #export_mp4_to_frames(video_file_path, frame_out)
 
 
 # def multithreaded_video_processor(vid_list):
@@ -105,10 +106,9 @@ if __name__ == '__main__':
 
     vid_list = [f'{project_root}{model}/{pose}/{mp4}' for mp4 in mp4_sources for pose in pose_sources for model in model_sources]
     for mp4 in vid_list[100:110]:
-        print(f'{mp4}')
-        frame_out = mp4.replace('/LA-data/', 'LA-data-frames/')
-        frame_out = frame_out.replace('.mp4', '_00000.avif')
-        print(f'{frame_out}')
+        process_video_file(mp4)
+    print(len(model_sources), 'models found')
+    print(len(pose_sources), 'poses found')
     print(len(vid_list), 'mp4 files found')
     print("gather complete")
 
