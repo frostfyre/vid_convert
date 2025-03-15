@@ -104,8 +104,11 @@ if __name__ == '__main__':
             mp4_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith('.mp4')])
 
     vid_list = [f'{project_root}{model}/{pose}/{mp4}' for mp4 in mp4_sources for pose in pose_sources for model in model_sources]
-    for mp4 in vid_list:
+    for mp4 in vid_list[100:110]:
         print(f'{mp4}')
+        frame_out = mp4.replace('/LA-data/', 'LA-data-frames/')
+        frame_out = frame_out.replace('.mp4', '_00000.avif')
+        print(f'{frame_out}')
     print(len(vid_list), 'mp4 files found')
     print("gather complete")
 
