@@ -87,7 +87,7 @@ def process_video_file(video_file_path):
     pose = video_file_path.split('/')[-3]
 
     frame_out = mp4.replace('/LA-data/', '/LA-data-frames/')
-    frame_out = frame_out.replace('.mp4', '_00000.avif')
+    frame_out = frame_out.replace('.mp4', '_00000.avif')  # this needs to be changed to the correct frame number in the converter
     base_frame_out_dir = os.path.dirname(frame_out)
     frame_out_dir = base_frame_out_dir + f'{camera}'
     frame_out = frame_out_dir + f'/{pose}-{camera}_00000.avif'
