@@ -117,9 +117,9 @@ if __name__ == '__main__':
     vid_list = [f'{project_root}{model}/{pose}/{mp4}' for mp4 in mp4_sources for pose in pose_sources for model in model_sources]
     for mp4 in vid_list[100:110]:
         process_video_file(mp4)
-    logger.info(len(model_sources), 'models found')
-    logger.info(len(pose_sources), 'poses found')
-    logger.info(len(vid_list), 'mp4 files found')
+    logger.info(f'{len(model_sources)}, models found')
+    logger.info(f'{len(pose_sources)}, poses found')
+    logger.info(f'{len(mp4_sources)}, mp4 files found')
     # dump logs to file
     logger.handlers[0].close()
     logger.handlers[1].close()
