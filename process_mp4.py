@@ -119,7 +119,7 @@ if __name__ == '__main__':
         process_video_file(mp4)
     logger.info(len(model_sources), 'models found')
     logger.info(len(pose_sources), 'poses found')
-    logger.infor(len(vid_list), 'mp4 files found')
+    logger.info(len(vid_list), 'mp4 files found')
     # dump logs to file
     logger.handlers[0].close()
     logger.handlers[1].close()
