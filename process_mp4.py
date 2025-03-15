@@ -4,13 +4,15 @@ from pathlib import Path
 # import cv2
 # import time
 # import pillow_avif
-# import logging
-# # TODO: improve output file names
+import logging
 # # TODO: add support for "continue" processing, such that it does not re-render frames that already exist
 # # TODO: implement a logging system
 
-# logging.basicConfig(filename='process_mp4.log', level=logging.DEBUG)
-# logger = logging.getLogger(__name__)
+logging.basicConfig(filename='process_mp4.log', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+# log out put to console and home directory
+logger.addHandler(logging.StreamHandler())
+logger.addHandler(logging.FileHandler('~process_mp4.log'))
 
 
 # def convert_png_to_avif(image_in):
@@ -82,6 +84,7 @@ def export_mp4_to_frames(mp4_path, frames_path):
 def process_video_file(video_file_path):
     frame_out = mp4.replace('/LA-data/', '/LA-data-frames/')
     frame_out = frame_out.replace('.mp4', '_00000.avif')
+    print(f'Processing {video_file_path}\n\tOutput: {frame_out}')
     #export_mp4_to_frames(video_file_path, frame_out)
 
 
