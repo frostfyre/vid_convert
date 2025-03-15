@@ -103,9 +103,10 @@ if __name__ == '__main__':
         for pose in pose_sources:
             mp4_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith('.mp4')])
 
-    for mp4 in mp4_sources:
+    vid_list = [f'{project_root}{model}/{pose}/{mp4}' for mp4 in mp4_sources for pose in pose_sources for model in model_sources]
+    for mp4 in vid_list:
         print(f'{mp4}')
-
+    print(len(vid_list), 'mp4 files found')
     print("gather complete")
 
     # print('Multiprocessing Video Captures')
