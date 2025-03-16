@@ -91,6 +91,22 @@ def rotate_images(input_folder, output_folder, angle):
             rotated_img.save(os.path.join(output_folder, filename))
 
 
+def find_png_files(folder):
+    # recursively find png files()
+    png_files = []
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith(".png"):
+                png_files.append(os.path.join(root, file))
+    return png_files
+
+
+def cleanup_png_files(folder='/mnt/data/datasets/LA-data-frames/'):
+    # recursively find png files and convert them
+    files = find_png_files(folder)
+    _ = [convert_png_to_avif(file) for file in files]
+
+
 def multithreaded_video_processor(vid_list):
     # multithreaded processing
     import concurrent.futures
