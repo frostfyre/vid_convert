@@ -7,7 +7,7 @@ import pillow_avif
 import logging
 import sys
 
-logging.basicConfig(filename='frame_processing.log', level=logging.DEBUG)
+logging.basicConfig(filename='frame_processing.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.FileHandler('frame_processing.log'))
 logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -120,8 +120,8 @@ def gather_mp4_files(project_root = '/mnt/data/datasets/LA-data/'):
 if __name__ == '__main__':
     print('Multiprocessing Video Captures')
     start = time.time()
-    # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001
-    vid_list = gather_mp4_files(project_root='/Users/spooky/Downloads/LA-data/')
+    # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
+    vid_list = gather_mp4_files()
     try:
         multithreaded_video_processor(vid_list)
     except BaseException as e:
