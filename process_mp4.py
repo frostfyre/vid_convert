@@ -1,9 +1,9 @@
 from PIL import Image
 import os
 from pathlib import Path
-# import cv2
-# import time
-# import pillow_avif
+import cv2
+import time
+import pillow_avif
 import logging
 # # TODO: add support for "continue" processing, such that it does not re-render frames that already exist
 # # TODO: implement a logging system
@@ -87,13 +87,23 @@ def process_video_file(video_file_path):
     pose = video_file_path.split('/')[-3]
 
     frame_out = mp4.replace('/LA-data/', '/LA-data-frames/')
+    # all of this logic needs to be placed within the converter
     frame_out = frame_out.replace('.mp4', '_00000.avif')  # this needs to be changed to the correct frame number in the converter
     base_frame_out_dir = os.path.dirname(frame_out)
     frame_out_dir = base_frame_out_dir + f'/{camera}'
     frame_out = frame_out_dir + f'/{pose}-{camera}_00000.avif'
-    logger.info(f'Processing {video_file_path}\nOutput: {frame_out}')
-    #export_mp4_to_frames(video_file_path, frame_out)
 
+    if os.path.exists(frame_out):
+        logger.info(f'Frame {frame_out} already exists. Skipping')
+        return
+
+
+    if not os.path.exists(frame_out_dir):
+        os.makedirs(frame_out_dir)
+        logger.info(f'Processing {video_file_path}\nOutput: {frame_out}')
+        if not os.path.exists(frame_out):
+            #export_mp4_to_frames(video_file_path, frame_out)
+    
 
 # def multithreaded_video_processor(vid_list):
 #     # multithreaded processing
@@ -115,11 +125,12 @@ if __name__ == '__main__':
             mp4_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith('.mp4')])
 
     vid_list = [f'{project_root}{model}/{pose}/{mp4}' for mp4 in mp4_sources for pose in pose_sources for model in model_sources]
-    for mp4 in vid_list[100:110]:
+    for mp4 in vid_list:
         process_video_file(mp4)
-    logger.info(f'{len(model_sources)}, models found')
-    logger.info(f'{len(pose_sources)}, poses found')
-    logger.info(f'{len(mp4_sources)}, mp4 files found')
+
+    logger.info(f'{len(model_sources)} models found')
+    logger.info(f'{len(pose_sources)} poses found')
+    logger.info(f'{len(mp4_sources)} mp4 files found')
     # dump logs to file
     logger.handlers[0].close()
     logger.handlers[1].close()
