@@ -6,12 +6,9 @@ import time
 import pillow_avif
 import logging
 
-# # TODO: add support for "continue" processing, such that it does not re-render frames that already exist
 
 logging.basicConfig(filename='process_mp4.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-# log out put to console and home directory
-# logger.addHandler(logging.StreamHandler())
 logger.addHandler(logging.FileHandler('process_mp4.log'))
 
 
@@ -29,45 +26,43 @@ def convert_png_to_avif(image_in):
     os.remove(image_in)
 
 
-def export_mp4_to_frames(mp4_path, frames_path):
+def pad_frame_number(count, pad_length=5):
+    #given an integer, pad it with zeros to make it pad length long
+    # return as string
+    count_str = str(count)
+    if len(count_str) < pad_length:
+        count_str = '0' * (pad_length - len(count_str)) + count_str
+    return count_str
+
+
+def export_mp4_to_frames(mp4_path):
     # load the mp4 file, output whole frames rotated 90 degrees clockwise
     # frames will be AVIF format
+    frames_path = os.path.dirname(mp4_path.replace('/LA-data/', '/LA-data-frames/'))
+
     if not os.path.exists(frames_path):
         os.makedirs(frames_path)
     vidcap = cv2.VideoCapture(mp4_path)
     success, image = vidcap.read()
     count = 0
-    try:
-        pose_name = [t for t in os.path.basename(mp4_path).split('/') if t.startswith('EXP_')]
-        pose_name = pose_name[0]
-    except:
-        pose_name = "unknown_pose"
-    cam_name = os.path.basename(mp4_path).split('-')[0]
-    # construct filename
-    basename = os.path.basename(mp4_path).split('.')[0]
+    camera = mp4_path.split('/')[-1].split('-')[0]
+    pose = mp4_path.split('/')[-2]
+    model = mp4_path.split('/')[-3]
+
     while success:
         # pad frame number with zeros
-        if len(str(count)) == 1:
-            out_name = f'{basename}_0000{count}.png'
-        elif len(str(count)) == 2:
-            out_name = f'{basename}_000{count}.png'
-        elif len(str(count)) == 3:
-            out_name = f'{basename}_00{count}.png'
-        elif len(str(count)) == 4:
-            out_name = f'{basename}_0{count}.png'
-        else:
-            out_name = f'{basename}_{count}.png'
-
-        output_path = os.path.join(frames_path, out_name)
-        # print(f'Exporting {out_name} to {frames_path}')
-        # image rotate 90 degrees clockwise
-        image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-        cv2.imwrite(output_path, image)
-        success, image = vidcap.read()
-        convert_png_to_avif(output_path)
-        # print('Read a new frame: ', success)
+        out_name = f'{frames_path}/{camera}-{pose}-{pad_frame_number(count)}.png'
+        if os.path.exists(out_name):
+            logger.info(f'Frame {out_name} already exists. Skipping')
+        elif not os.path.exists(out_name):
+            # image rotate 90 degrees clockwise
+            image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+            cv2.imwrite(out_name, image)
+            success, image = vidcap.read()
+            convert_png_to_avif(out_name)
+            # print('Read a new frame: ', success)
         count += 1
-    logger.info(f'Wrote {count} frames from {cam_name} to {frames_path}')
+    logger.info(f'Wrote {count} frames from {model} {pose} {camera} to:\n{frames_path}')
 
 
 def rotate_images(input_folder, output_folder, angle):
@@ -81,47 +76,14 @@ def rotate_images(input_folder, output_folder, angle):
             rotated_img.save(os.path.join(output_folder, filename))
 
 
-def process_video_file(video_file_path):  # TODO: migrate this to the actual export_mp4_to_frames function
-
-    # Processing /mnt/data/datasets/LA-data/Model2/GAZ_g001_400349_neutral_wide_squint_blink_wink/camera_20-0137.mp4
-    # Output: /mnt/data/datasets/LA-data-frames/Model2/GAZ_g001_400349_neutral_wide_squint_blink_wink/camera_20/Model2-camera_20_00000.avif
-
-    camera = video_file_path.split('/')[-1].split('-')[0]
-    pose = video_file_path.split('/')[-2]
-    model = video_file_path.split('/')[-3]
-
-    frame_out = mp4.replace('/LA-data/', '/LA-data-frames/')
-    # all of this logic needs to be placed within the converter
-    frame_out = frame_out.replace('.mp4', '_00000.avif')  # this needs to be changed to the correct frame number in the converter
-    base_frame_out_dir = os.path.dirname(frame_out)
-    frame_out_dir = base_frame_out_dir + f'/{camera}'
-    frame_out = frame_out_dir + f'/{pose}-{camera}_00000.avif'
-
-    if os.path.exists(frame_out):
-        logger.info(f'Frame {frame_out} already exists. Skipping')
-        return
-
-
-    if not os.path.exists(frame_out_dir):
-        os.makedirs(frame_out_dir)
-        logger.info(f'Processing {video_file_path}\nOutput: {frame_out}')
-        if not os.path.exists(frame_out):
-            #export_mp4_to_frames(video_file_path, frame_out)
-            pass
-    
-
 def multithreaded_video_processor(vid_list):
     # multithreaded processing
     import concurrent.futures
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.map(process_video_file, vid_list)
+        executor.map(export_mp4_to_frames, vid_list)
 
-
-if __name__ == '__main__':
-
-    project_root = '/mnt/data/datasets/LA-data/'
+def gather_mp4_files(project_root = '/mnt/data/datasets/LA-data/'):
     pose_sources = []
-    # export_mp4_to_frames(f'{project_root}camera_06-0002.mp4', project_root + '/cam_6_frames/')
     mp4_sources = []
     model_sources = [f for f in os.listdir(project_root) if f.startswith('Model')]
     for model in model_sources:
@@ -133,22 +95,19 @@ if __name__ == '__main__':
                 logger.error(f'No mp4 files found in {project_root}{model}/{pose}/')
 
     vid_list = [f'{project_root}{model}/{pose}/{mp4}' for mp4 in mp4_sources for pose in pose_sources for model in model_sources]
-    for mp4 in vid_list:
-        process_video_file(mp4)
-
     logger.info(f'{len(model_sources)} models found')
     logger.info(f'{len(pose_sources)} poses found')
     logger.info(f'{len(vid_list)} mp4 files found')
-    # dump logs to file
-    logger.handlers[0].close()
-    # logger.handlers[1].close()
-    print("gather complete")
+    return vid_list
 
-    # print('Multiprocessing Video Captures')
-    # start = time.time()
-    # try:
-    #     multithreaded_video_processor(vid_list)
-    # except BaseException as e:
-    #     print(e)
-    # end = time.time()
-    # print((end - start), 'seconds')
+if __name__ == '__main__':
+    print('Multiprocessing Video Captures')
+    start = time.time()
+    vid_list = gather_mp4_files()
+    try:
+        multithreaded_video_processor(vid_list)
+    except BaseException as e:
+        logger.error(e)
+    end = time.time()
+    print((end - start), 'seconds')
+    logger.handlers[0].close()
