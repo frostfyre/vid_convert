@@ -5,13 +5,13 @@ import cv2
 import time
 import pillow_avif
 import logging
+
 # # TODO: add support for "continue" processing, such that it does not re-render frames that already exist
-# # TODO: implement a logging system
 
 logging.basicConfig(filename='process_mp4.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 # log out put to console and home directory
-logger.addHandler(logging.StreamHandler())
+# logger.addHandler(logging.StreamHandler())
 logger.addHandler(logging.FileHandler('process_mp4.log'))
 
 
@@ -29,45 +29,45 @@ def convert_png_to_avif(image_in):
     os.remove(image_in)
 
 
-# def export_mp4_to_frames(mp4_path, frames_path):
-#     # load the mp4 file, output whole frames rotated 90 degrees clockwise
-#     # frames will be AVIF format
-#     if not os.path.exists(frames_path):
-#         os.makedirs(frames_path)
-#     vidcap = cv2.VideoCapture(mp4_path)
-#     success, image = vidcap.read()
-#     count = 0
-#     try:
-#         pose_name = [t for t in os.path.basename(mp4_path).split('/') if t.startswith('EXP_')]
-#         pose_name = pose_name[0]
-#     except:
-#         pose_name = "unknown_pose"
-#     cam_name = os.path.basename(mp4_path).split('-')[0]
-#     # construct filename
-#     basename = os.path.basename(mp4_path).split('.')[0]
-#     while success:
-#         # pad frame number with zeros
-#         if len(str(count)) == 1:
-#             out_name = f'{basename}_0000{count}.png'
-#         elif len(str(count)) == 2:
-#             out_name = f'{basename}_000{count}.png'
-#         elif len(str(count)) == 3:
-#             out_name = f'{basename}_00{count}.png'
-#         elif len(str(count)) == 4:
-#             out_name = f'{basename}_0{count}.png'
-#         else:
-#             out_name = f'{basename}_{count}.png'
+def export_mp4_to_frames(mp4_path, frames_path):
+    # load the mp4 file, output whole frames rotated 90 degrees clockwise
+    # frames will be AVIF format
+    if not os.path.exists(frames_path):
+        os.makedirs(frames_path)
+    vidcap = cv2.VideoCapture(mp4_path)
+    success, image = vidcap.read()
+    count = 0
+    try:
+        pose_name = [t for t in os.path.basename(mp4_path).split('/') if t.startswith('EXP_')]
+        pose_name = pose_name[0]
+    except:
+        pose_name = "unknown_pose"
+    cam_name = os.path.basename(mp4_path).split('-')[0]
+    # construct filename
+    basename = os.path.basename(mp4_path).split('.')[0]
+    while success:
+        # pad frame number with zeros
+        if len(str(count)) == 1:
+            out_name = f'{basename}_0000{count}.png'
+        elif len(str(count)) == 2:
+            out_name = f'{basename}_000{count}.png'
+        elif len(str(count)) == 3:
+            out_name = f'{basename}_00{count}.png'
+        elif len(str(count)) == 4:
+            out_name = f'{basename}_0{count}.png'
+        else:
+            out_name = f'{basename}_{count}.png'
 
-#         output_path = os.path.join(frames_path, out_name)
-#         # print(f'Exporting {out_name} to {frames_path}')
-#         # image rotate 90 degrees clockwise
-#         image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-#         cv2.imwrite(output_path, image)
-#         success, image = vidcap.read()
-#         convert_png_to_avif(output_path)
-#         # print('Read a new frame: ', success)
-#         count += 1
-#     logger.info(f'Wrote {count} frames from {cam_name} to {frames_path}')
+        output_path = os.path.join(frames_path, out_name)
+        # print(f'Exporting {out_name} to {frames_path}')
+        # image rotate 90 degrees clockwise
+        image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+        cv2.imwrite(output_path, image)
+        success, image = vidcap.read()
+        convert_png_to_avif(output_path)
+        # print('Read a new frame: ', success)
+        count += 1
+    logger.info(f'Wrote {count} frames from {cam_name} to {frames_path}')
 
 
 def rotate_images(input_folder, output_folder, angle):
@@ -81,10 +81,14 @@ def rotate_images(input_folder, output_folder, angle):
             rotated_img.save(os.path.join(output_folder, filename))
 
 
-def process_video_file(video_file_path):
+def process_video_file(video_file_path):  # TODO: migrate this to the actual export_mp4_to_frames function
+
+    # Processing /mnt/data/datasets/LA-data/Model2/GAZ_g001_400349_neutral_wide_squint_blink_wink/camera_20-0137.mp4
+    # Output: /mnt/data/datasets/LA-data-frames/Model2/GAZ_g001_400349_neutral_wide_squint_blink_wink/camera_20/Model2-camera_20_00000.avif
+
     camera = video_file_path.split('/')[-1].split('-')[0]
-    model = video_file_path.split('/')[-2]
-    pose = video_file_path.split('/')[-3]
+    pose = video_file_path.split('/')[-2]
+    model = video_file_path.split('/')[-3]
 
     frame_out = mp4.replace('/LA-data/', '/LA-data-frames/')
     # all of this logic needs to be placed within the converter
@@ -106,11 +110,11 @@ def process_video_file(video_file_path):
             pass
     
 
-# def multithreaded_video_processor(vid_list):
-#     # multithreaded processing
-#     import concurrent.futures
-#     with concurrent.futures.ThreadPoolExecutor() as executor:
-#         executor.map(process_video_file, vid_list)
+def multithreaded_video_processor(vid_list):
+    # multithreaded processing
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(process_video_file, vid_list)
 
 
 if __name__ == '__main__':
@@ -137,7 +141,7 @@ if __name__ == '__main__':
     logger.info(f'{len(vid_list)} mp4 files found')
     # dump logs to file
     logger.handlers[0].close()
-    logger.handlers[1].close()
+    # logger.handlers[1].close()
     print("gather complete")
 
     # print('Multiprocessing Video Captures')
