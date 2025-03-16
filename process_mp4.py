@@ -103,6 +103,7 @@ def process_video_file(video_file_path):
         logger.info(f'Processing {video_file_path}\nOutput: {frame_out}')
         if not os.path.exists(frame_out):
             #export_mp4_to_frames(video_file_path, frame_out)
+            pass
     
 
 # def multithreaded_video_processor(vid_list):
@@ -115,12 +116,12 @@ def process_video_file(video_file_path):
 if __name__ == '__main__':
 
     project_root = '/mnt/data/datasets/LA-data/'
-
+    pose_sources = []
     # export_mp4_to_frames(f'{project_root}camera_06-0002.mp4', project_root + '/cam_6_frames/')
     mp4_sources = []
     model_sources = [f for f in os.listdir(project_root) if f.startswith('Model')]
     for model in model_sources:
-        pose_sources = [f for f in os.listdir(f'{project_root}{model}/') if os.path.isdir(f'{project_root}{model}/{f}')]
+        pose_sources.extend([f for f in os.listdir(f'{project_root}{model}/') if os.path.isdir(f'{project_root}{model}/{f}')])
         for pose in pose_sources:
             mp4_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith('.mp4')])
 
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 
     logger.info(f'{len(model_sources)} models found')
     logger.info(f'{len(pose_sources)} poses found')
-    logger.info(f'{len(mp4_sources)} mp4 files found')
+    logger.info(f'{len(vid_list)} mp4 files found')
     # dump logs to file
     logger.handlers[0].close()
     logger.handlers[1].close()
