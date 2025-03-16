@@ -53,15 +53,15 @@ def export_mp4_to_frames(mp4_path):
         # pad frame number with zeros
         out_name = f'{frames_path}/{camera}-{pose}-{pad_frame_number(count)}.png'
         avif_name = f'{frames_path}/{camera}-{pose}-{pad_frame_number(count)}.avif'
-        if os.path.exists(avif_name):
-            logger.debug(f'Frame {avif_name} already exists. Skipping')
-
-        elif not os.path.exists(avif_name):
-            # image rotate 90 degrees clockwise
-            image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-            cv2.imwrite(out_name, image)
-            convert_png_to_avif(out_name)
-            # print('Read a new frame: ', success)
+        # if os.path.exists(avif_name):
+        #     logger.debug(f'Frame {avif_name} already exists. Skipping')
+        #
+        # else:
+        # image rotate 90 degrees clockwise
+        image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+        cv2.imwrite(out_name, image)
+        convert_png_to_avif(out_name)
+        # print('Read a new frame: ', success)
         success, image = vidcap.read()
         count += 1
     logger.info(f'Wrote {count} frames from {model} {pose} {camera} to:\n{frames_path}')
