@@ -7,7 +7,7 @@ import pillow_avif
 import logging
 
 
-logging.basicConfig(filename='process_mp4.log', level=logging.DEBUG)
+logging.basicConfig(filename='process_mp4.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.FileHandler('process_mp4.log'))
 
@@ -52,9 +52,10 @@ def export_mp4_to_frames(mp4_path):
     while success:
         # pad frame number with zeros
         out_name = f'{frames_path}/{camera}-{pose}-{pad_frame_number(count)}.png'
-        if os.path.exists(out_name):
-            logger.info(f'Frame {out_name} already exists. Skipping')
-        elif not os.path.exists(out_name):
+        avif_name = f'{frames_path}/{camera}-{pose}-{pad_frame_number(count)}.avif'
+        if os.path.exists(avif_name):
+            logger.info(f'Frame {avif_name} already exists. Skipping')
+        elif not os.path.exists(avif_name):
             # image rotate 90 degrees clockwise
             image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
             cv2.imwrite(out_name, image)
