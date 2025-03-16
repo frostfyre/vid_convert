@@ -123,7 +123,10 @@ if __name__ == '__main__':
     for model in model_sources:
         pose_sources.extend([f for f in os.listdir(f'{project_root}{model}/') if os.path.isdir(f'{project_root}{model}/{f}')])
         for pose in pose_sources:
-            mp4_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith('.mp4')])
+            try:
+                mp4_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith('.mp4')])
+            except:
+                logger.error(f'No mp4 files found in {project_root}{model}/{pose}/')
 
     vid_list = [f'{project_root}{model}/{pose}/{mp4}' for mp4 in mp4_sources for pose in pose_sources for model in model_sources]
     for mp4 in vid_list:
