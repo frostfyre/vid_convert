@@ -66,12 +66,13 @@ def export_mp4_to_frames(mp4_path):
             out_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.png'
             avif_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.avif'
             image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-            cv2.imwrite(out_name, image)
-            # logger.debug(f'Extracted {out_name}, exists: {os.path.exists(out_name)}')
-            # logger.debug("generating AVIF")
-            convert_png_to_avif(out_name)
-            # logger.debug(f'Created {avif_name}, exists: {os.path.exists(avif_name)}')
-            # print('Read a new frame: ', success)
+            if not os.path.exists(avif_name):
+                cv2.imwrite(out_name, image)
+                # logger.debug(f'Extracted {out_name}, exists: {os.path.exists(out_name)}')
+                # logger.debug("generating AVIF")
+                convert_png_to_avif(out_name)
+                # logger.debug(f'Created {avif_name}, exists: {os.path.exists(avif_name)}')
+                # print('Read a new frame: ', success)
         except BaseException as e:
             logger.error(f'Error processing frame {count} from {mp4_path}:\n\t{e}')
         success, image = vidcap.read()
@@ -137,7 +138,7 @@ if __name__ == '__main__':
     print('Multiprocessing Video Captures')
     start = time.time()
     # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
-    vid_list = gather_mp4_files()
+    vid_list = gather_mp4_files(project_root='/Users/spooky/Downloads/LA-data/')
     try:
         multithreaded_video_processor(vid_list)
     except BaseException as e:
