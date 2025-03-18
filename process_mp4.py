@@ -138,7 +138,7 @@ if __name__ == '__main__':
     print('Multiprocessing Video Captures')
     start = time.time()
     # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
-    vid_list = gather_mp4_files(project_root='/Users/spooky/Downloads/LA-data/')
+    vid_list = gather_mp4_files()
     try:
         multithreaded_video_processor(vid_list)
     except BaseException as e:
