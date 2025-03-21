@@ -38,8 +38,8 @@ if __name__ == '__main__':
         threshold = int(sys.argv[2])
     else:
         threshold = 22000
-    if 'preview' in sys.argv:
-        report_partials(folder, threshold)
-    else:
+    if 'clean' in sys.argv:
         clean_partials(folder, threshold)
+    else:
+        report_partials(folder, threshold)
     logger.info('Done')
