@@ -11,6 +11,7 @@ from PIL import Image
 import pillow_avif
 import time
 import shutil
+from process_mp4 import convert_png_to_avif
 
 # Set up logging
 logging.basicConfig(filename='verify_output.log', level=logging.INFO)
@@ -85,6 +86,13 @@ if __name__ == '__main__':
         png_files = get_all_pngs(folder)
         if png_files:
             logger.info(f'Found {len(png_files)} PNG files in {folder}')
+            for png in png_files:
+                print(f'trying to convert {png}')
+                try:
+                    convert_png_to_avif(png)
+                except BaseException as e:
+                    logger.error(f'Error converting {png} to AVIF:\n\t{e}')
+                    pass
         else:
             logger.info(f'No PNG files found in {folder}')
     if 'avif' in sys.argv:
