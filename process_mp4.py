@@ -184,6 +184,13 @@ def get_mp4_from_png_path(png_path):
             if file.endswith('.mp4') and file.startswith(camera):
                 mp4_base_path = os.path.join(root, file)
     if not mp4_base_path:
+        # exception for Model1 (target: /mnt/data/datasets/LA-data/Model1/EXP_jaw003)
+        base_path = f'{base_path.replace(camera, "")}'
+        for root, dirs, files in os.walk(base_path):
+            for file in files:
+                if file.endswith('.mp4') and file.startswith(camera):
+                    mp4_base_path = os.path.join(root, file)
+    if not mp4_base_path:
         logger.error(f'No MP4 file found for {png_path}')
     else:
         logger.info(f'Found MP4 file: {mp4_base_path}')
