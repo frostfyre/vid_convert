@@ -6,7 +6,6 @@ import time
 import pillow_avif
 import logging
 import sys
-from verify_output import get_all_pngs
 
 logging.basicConfig(filename='frame_processing.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -180,6 +179,17 @@ def get_mp4_from_png_path(png_path):
     mp4_path = f'/mnt/data/datasets/LA-data/{model}/{pose}/{camera}.mp4'
     return mp4_path
 
+
+def get_all_pngs(folder):
+    """Recursively get all PNG files from the given folder."""
+    png_files = []
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith('.png'):
+                png_files.append(os.path.join(root, file))
+    return png_files
+
+
 if __name__ == '__main__':
     '''
     Stragglers (TRUNCATED FILES)
@@ -237,3 +247,13 @@ if __name__ == '__main__':
     # end = time.time()
     # print((end - start), 'seconds')
     # logger.handlers[0].close()
+
+
+def get_all_avifs(folder):
+    """Recursively get all AVIF files from the given folder."""
+    avif_files = []
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith('.avif'):
+                avif_files.append(os.path.join(root, file))
+    return avif_files
