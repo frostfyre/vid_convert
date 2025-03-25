@@ -229,8 +229,8 @@ if __name__ == '__main__':
     # files = get_all_pngs('/Users/spooky/Downloads/LA-data-frames/')
 
     for png in files:
-    #     mp4_path = get_mp4_from_png_path(png)
-    #     print(mp4_path)
+        mp4_path = get_mp4_from_png_path(png)
+        print(mp4_path)
 
         png_name = os.path.basename(png)
         frame_number = int(png_name.split('.')[0].split('-')[-1])
