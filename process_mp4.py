@@ -81,6 +81,17 @@ def export_mp4_to_frames(mp4_path):
     logger.info(f'Wrote {count} frames from {model} {pose} {camera} to:\n{frames_path}')
 
 
+def get_all_avifs(folder):
+    """Recursively get all AVIF files from the given folder."""
+    avif_files = []
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith('.avif'):
+                avif_files.append(os.path.join(root, file))
+    return avif_files
+
+
+
 def rotate_images(input_folder, output_folder, angle):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -213,24 +224,14 @@ def get_all_pngs(folder):
 
 
 if __name__ == '__main__':
-    '''
-    Stragglers (TRUNCATED FILES)
-    Found 7 PNG files in /mnt/data/datasets/LA-data-frames/
-    /mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_46-EXP_eyebrow-00079.png
-    /mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_77-EXP_eyebrow-00463.png
-    /mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_53-EXP_eyebrow-00187.png
-    /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_66/EXP_jaw003-00654.png
-    /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_68/EXP_jaw003-00569.png
-    /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_67/EXP_jaw003-00392.png        
-    /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_69/EXP_jaw003-00272.png
-    '''
+
     files = get_all_pngs('/mnt/data/datasets/LA-data-frames/')
     # files = get_all_pngs('/Users/spooky/Downloads/LA-data-frames/')
 
     for png in files:
-        mp4_path = get_mp4_from_png_path(png)
-        print(mp4_path)
-    '''
+    #     mp4_path = get_mp4_from_png_path(png)
+    #     print(mp4_path)
+
         png_name = os.path.basename(png)
         frame_number = int(png_name.split('.')[0].split('-')[-1])
         if os.path.exists(png) and os.path.exists(mp4_path):
@@ -258,7 +259,7 @@ if __name__ == '__main__':
     if pngs:
         for p in pngs:
             print(p)
-    '''
+
     # print('Multiprocessing Video Captures')
     # start = time.time()
     # # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
@@ -272,11 +273,3 @@ if __name__ == '__main__':
     # logger.handlers[0].close()
 
 
-def get_all_avifs(folder):
-    """Recursively get all AVIF files from the given folder."""
-    avif_files = []
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-            if file.endswith('.avif'):
-                avif_files.append(os.path.join(root, file))
-    return avif_files
