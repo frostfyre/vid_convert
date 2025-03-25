@@ -173,11 +173,21 @@ def get_mp4_from_png_path(png_path):
     # given a path to a PNG file, derive the corresponding MP4 file
     # /mnt/data/datasets/LA-data-frames/Model1/EXP_eye_neutral/camera_07-0003.png
     # /mnt/data/datasets/LA-data/Model1/EXP_eye_neutral/camera_07-0003.mp4
-    camera = png_path.split('/')[-1].split('-')[0]
-    pose = png_path.split('/')[-2]
-    model = png_path.split('/')[-3]
-    mp4_path = f'/mnt/data/datasets/LA-data/{model}/{pose}/{camera}.mp4'
-    return mp4_path
+    '''/mnt/data/datasets/LA-data/Model1/EXP_jaw003/camera_50-0014.mp4 << GOOD PATH'''
+    '''/mnt/data/datasets/LA-data/EXP_jaw003/camera_69/EXP_jaw003.mp4 << BAD PATH'''
+    base_path = str(os.path.dirname(png_path).replace('/LA-data-frames/', '/LA-data/'))
+    camera = os.path.basename(png_path).split('-')[0]
+    # search for mp4 files in base_path that start with camera
+    mp4_base_path = None
+    for root, dirs, files in os.walk(base_path):
+        for file in files:
+            if file.endswith('.mp4') and file.startswith(camera):
+                mp4_base_path = os.path.join(root, file)
+    if not mp4_base_path:
+        logger.error(f'No MP4 file found for {png_path}')
+    else:
+        logger.info(f'Found MP4 file: {mp4_base_path}')
+    return mp4_base_path
 
 
 def get_all_pngs(folder):
@@ -202,16 +212,12 @@ if __name__ == '__main__':
     /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_67/EXP_jaw003-00392.png        
     /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_69/EXP_jaw003-00272.png
     '''
-    files = ['/mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_46-EXP_eyebrow-00079.png',
-             '/mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_77-EXP_eyebrow-00463.png',
-             '/mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_53-EXP_eyebrow-00187.png',
-             '/mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_66/EXP_jaw003-00654.png',
-             '/mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_68/EXP_jaw003-00569.png',
-             '/mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_67/EXP_jaw003-00392.png',
-             '/mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_69/EXP_jaw003-00272.png']
+    files = get_all_pngs('/mnt/data/datasets/LA-data-frames/')
 
     for png in files:
         mp4_path = get_mp4_from_png_path(png)
+        print(mp4_path)
+    '''
         png_name = os.path.basename(png)
         frame_number = int(png_name.split('.')[0].split('-')[-1])
         if os.path.exists(png) and os.path.exists(mp4_path):
@@ -239,7 +245,7 @@ if __name__ == '__main__':
     if pngs:
         for p in pngs:
             print(p)
-
+    '''
     # print('Multiprocessing Video Captures')
     # start = time.time()
     # # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
