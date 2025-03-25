@@ -176,7 +176,8 @@ def get_mp4_from_png_path(png_path):
     '''/mnt/data/datasets/LA-data/Model1/EXP_jaw003/camera_50-0014.mp4 << GOOD PATH'''
     '''/mnt/data/datasets/LA-data/EXP_jaw003/camera_69/EXP_jaw003.mp4 << BAD PATH'''
     base_path = str(os.path.dirname(png_path).replace('/LA-data-frames/', '/LA-data/'))
-    camera = os.path.basename(png_path).split('-')[0]
+    pose = os.path.basename(png_path).split('-')[0]
+    camera = os.path.dirname(png_path).split('/')[-1]
     # search for mp4 files in base_path that start with camera
     mp4_base_path = None
     for root, dirs, files in os.walk(base_path):
@@ -185,7 +186,10 @@ def get_mp4_from_png_path(png_path):
                 mp4_base_path = os.path.join(root, file)
     if not mp4_base_path:
         # exception for Model1 (target: /mnt/data/datasets/LA-data/Model1/EXP_jaw003)
-        base_path = f'{base_path.replace(camera, "")}'
+        base_path = base_path.replace(f'/{camera}', "")
+        print(camera, pose)
+        print(f'exists: {os.path.exists(base_path)}')
+        print(f'Searching {base_path}')
         for root, dirs, files in os.walk(base_path):
             for file in files:
                 if file.endswith('.mp4') and file.startswith(camera):
@@ -220,6 +224,7 @@ if __name__ == '__main__':
     /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_69/EXP_jaw003-00272.png
     '''
     files = get_all_pngs('/mnt/data/datasets/LA-data-frames/')
+    # files = get_all_pngs('/Users/spooky/Downloads/LA-data-frames/')
 
     for png in files:
         mp4_path = get_mp4_from_png_path(png)
