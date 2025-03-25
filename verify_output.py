@@ -5,13 +5,8 @@
 import os
 import sys
 import logging
-from pathlib import Path
 import cv2
-from PIL import Image
-import pillow_avif
-import time
-import shutil
-from process_mp4 import convert_png_to_avif
+from process_mp4 import convert_png_to_avif, get_all_pngs, get_all_avifs
 
 # Set up logging
 logging.basicConfig(filename='verify_output.log', level=logging.INFO)
@@ -19,23 +14,6 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.FileHandler('verify_output.log'))
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
-def get_all_pngs(folder):
-    """Recursively get all PNG files from the given folder."""
-    png_files = []
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-            if file.endswith('.png'):
-                png_files.append(os.path.join(root, file))
-    return png_files
-
-def get_all_avifs(folder):
-    """Recursively get all AVIF files from the given folder."""
-    avif_files = []
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-            if file.endswith('.avif'):
-                avif_files.append(os.path.join(root, file))
-    return avif_files
 
 def seek_frame_and_convert(mp4_file, frame_number):
     """Seek to a specific frame in the mp4 file and convert it to PNG."""
