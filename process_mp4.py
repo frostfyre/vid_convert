@@ -222,12 +222,16 @@ if __name__ == '__main__':
             except BaseException as e:
                 print(f'Failed to process {png}:\n{e}')
         else:
-            logger.error(f'File {png} or {mp4_path} not found')
+            logger.error(f'File {png} exists {os.path.exists(png)}\n{mp4_path} exists {os.path.exists(mp4_path)}')
     time.sleep(10)
     # PNGs regenerated, convert to AVIF
 
     for png in files:
-        convert_png_to_avif(png)
+        try:
+            convert_png_to_avif(png)
+        except BaseException as e:
+            logger.error(f'Error converting {png} to AVIF:\n\t{e}')
+            pass
     time.sleep(10)
 
     # should no longer be any PNGs
