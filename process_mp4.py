@@ -6,6 +6,7 @@ import time
 import pillow_avif
 import logging
 import sys
+from verify_output import get_all_pngs
 
 logging.basicConfig(filename='frame_processing.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -134,15 +135,105 @@ def gather_mp4_files(project_root = '/mnt/data/datasets/LA-data/'):
     vid_list.sort()
     return vid_list
 
+    camera = mp4_path.split('/')[-1].split('-')[0]
+    pose = mp4_path.split('/')[-2]
+    model = mp4_path.split('/')[-3]
+
+
+def process_single_frame(input_file, frame_number):
+    # Open the video file
+    video = cv2.VideoCapture(input_file)
+
+    # derive file output path from input file
+    camera = input_file.split('/')[-1].split('-')[0]
+    pose = input_file.split('/')[-2]
+    model = input_file.split('/')[-3]
+    count = pad_frame_number(frame_number)
+    frames_path = os.path.dirname(input_file.replace('/LA-data/', '/LA-data-frames/'))
+    output_file = f'{frames_path}/{pose}-{pad_frame_number(count)}.png'
+    avif_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.avif'
+    # Set the frame position
+    video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+
+    # Read the specific frame
+    success, frame = video.read()
+    if not success:
+        print("Failed to retrieve the frame.")
+        return
+
+    # Rotate the frame 90 degrees clockwise
+    rotated_frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+
+    # Save the frame as a PNG image using cv2
+    cv2.imwrite(output_file, rotated_frame)
+
+    # Release video capture
+    video.release()
+
+def get_mp4_from_png_path(png_path):
+    # given a path to a PNG file, derive the corresponding MP4 file
+    # /mnt/data/datasets/LA-data-frames/Model1/EXP_eye_neutral/camera_07-0003.png
+    # /mnt/data/datasets/LA-data/Model1/EXP_eye_neutral/camera_07-0003.mp4
+    camera = png_path.split('/')[-1].split('-')[0]
+    pose = png_path.split('/')[-2]
+    model = png_path.split('/')[-3]
+    mp4_path = f'/mnt/data/datasets/LA-data/{model}/{pose}/{camera}.mp4'
+    return mp4_path
+
 if __name__ == '__main__':
-    print('Multiprocessing Video Captures')
-    start = time.time()
-    # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
-    vid_list = gather_mp4_files()
-    try:
-        multithreaded_video_processor(vid_list)
-    except BaseException as e:
-        logger.error(e)
-    end = time.time()
-    print((end - start), 'seconds')
-    logger.handlers[0].close()
+    '''
+    Stragglers (TRUNCATED FILES)
+    Found 7 PNG files in /mnt/data/datasets/LA-data-frames/
+    /mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_46-EXP_eyebrow-00079.png
+    /mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_77-EXP_eyebrow-00463.png
+    /mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_53-EXP_eyebrow-00187.png
+    /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_66/EXP_jaw003-00654.png
+    /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_68/EXP_jaw003-00569.png
+    /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_67/EXP_jaw003-00392.png        
+    /mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_69/EXP_jaw003-00272.png
+    '''
+    files = ['/mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_46-EXP_eyebrow-00079.png',
+             '/mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_77-EXP_eyebrow-00463.png',
+             '/mnt/data/datasets/LA-data-frames/Model3/EXP_eyebrow/camera_53-EXP_eyebrow-00187.png',
+             '/mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_66/EXP_jaw003-00654.png',
+             '/mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_68/EXP_jaw003-00569.png',
+             '/mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_67/EXP_jaw003-00392.png',
+             '/mnt/data/datasets/LA-data-frames/Model1/EXP_jaw003/camera_69/EXP_jaw003-00272.png']
+
+    for png in files:
+        mp4_path = get_mp4_from_png_path(png)
+        png_name = os.path.basename(png)
+        frame_number = int(png_name.split('.')[0].split('-')[-1])
+        if os.path.exists(png) and os.path.exists(mp4_path):
+            os.remove(png)
+            logger.info(f'Removed {png}')
+            try:
+                process_single_frame(mp4_path, frame_number)
+            except BaseException as e:
+                print(f'Failed to process {png}:\n{e}')
+        else:
+            logger.error(f'File {png} or {mp4_path} not found')
+    time.sleep(10)
+    # PNGs regenerated, convert to AVIF
+
+    for png in files:
+        convert_png_to_avif(png)
+    time.sleep(10)
+
+    # should no longer be any PNGs
+    pngs = get_all_pngs('/mnt/data/datasets/LA-data-frames/')
+    if pngs:
+        for p in pngs:
+            print(p)
+
+    # print('Multiprocessing Video Captures')
+    # start = time.time()
+    # # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
+    # vid_list = gather_mp4_files()
+    # try:
+    #     multithreaded_video_processor(vid_list)
+    # except BaseException as e:
+    #     logger.error(e)
+    # end = time.time()
+    # print((end - start), 'seconds')
+    # logger.handlers[0].close()
