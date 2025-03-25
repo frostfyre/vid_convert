@@ -252,11 +252,14 @@ if __name__ == '__main__':
         except BaseException as e:
             logger.error(f'Error converting {png} to AVIF:\n\t{e}')
             pass
+        avif_name = png.replace('.png', '.avif')
+        print(f'AVIF output exists {avif_name}: {os.path.exists(avif_name)}')
     time.sleep(10)
 
     # should no longer be any PNGs
     pngs = get_all_pngs('/mnt/data/datasets/LA-data-frames/')
     if pngs:
+        print(f'Found {len(pngs)} PNG files')
         for p in pngs:
             print(p)
 
