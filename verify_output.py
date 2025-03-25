@@ -37,6 +37,25 @@ def get_all_avifs(folder):
                 avif_files.append(os.path.join(root, file))
     return avif_files
 
+def seek_frame_and_convert(mp4_file, frame_number):
+    """Seek to a specific frame in the mp4 file and convert it to PNG."""
+    if not os.path.exists(mp4_file):
+        logger.error(f'MP4 file not found: {mp4_file}')
+        return
+
+    vidcap = cv2.VideoCapture(mp4_file)
+    vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+    success, image = vidcap.read()
+    if not success:
+        logger.error(f'Failed to read frame {frame_number} from {mp4_file}')
+        return
+
+    # Save the frame as PNG
+    png_path = mp4_file.replace('.mp4', f'-{frame_number}.png')
+    cv2.imwrite(png_path, image)
+    logger.info(f'Saved frame {frame_number} from {mp4_file} as {png_path}')
+
+
 # compare if mp4_path from LA-data has corresponding frames in LA-data-frames
 
 def verify_frames(mp4_path):
