@@ -65,51 +65,78 @@ def get_range_entry(camera_number):
         logger.warning(f'Camera number {camera_number} not found in update table')
         return None
 
-def names_from_ranges(range_entry, old_filename):
-    camera_number = get_camera_number_from_path(old_filename)
-    frame_number = get_frame_number_from_path(old_filename)
+def frame_in_range(frame_number, range_entry):
+    # Check if the frame number is in the given range entry
+    try:
+        for old_range, new_range in range_entry:
+            if old_range[0] <= frame_number <= old_range[1]:
+                return True
+    except:
+        pass
+    return False
 
-    # common case, old range is a 2 value tuple, new range is a 2 value tuple
-    if len(range_entry) == 2:
-        old_range = range_entry[0]
-        new_range = range_entry[1]
-        offset = new_range - old_range
-
-        # if the frame_number is within the old range, calculate the new frame number
-        if old_range[0] >= frame_number <= old_range[1]:
-            new_frame_number = frame_number + offset
-            new_frame_padded = pad_frame_number(new_frame_number)
-            old_frame_padded = pad_frame_number(frame_number)
-            new_frame_name = old_filename.replace(old_frame_padded, new_frame_padded)
-            return new_frame_name
-    return None
+# def names_from_ranges(range_entry, old_filename):
+#     camera_number = pad_frame_number(get_camera_number_from_path(old_filename), 2)
+#     frame_number = pad_frame_number(get_frame_number_from_path(old_filename), 5)
+#     base_name = os.path.basename(old_filename)
+#     print(f'Base name: {base_name} Frame number: {frame_number} Camera number: {camera_number}')
+#     # common case, old range is a 2 value tuple, new range is a 2 value tuple
+#     if len(range_entry) == 2:
+#         print(f'Range entry: {range_entry}')
+#         old_range = range_entry[0]
+#         new_range = range_entry[1]
+#         offset = new_range - old_range
+#
+#         # if the frame_number is within the old range, calculate the new frame number
+#         if old_range[0] >= frame_number <= old_range[1]:
+#             new_frame_number = frame_number + offset
+#             new_frame_padded = pad_frame_number(new_frame_number)
+#             old_frame_padded = pad_frame_number(frame_number)
+#             new_frame_name = old_filename.replace(old_frame_padded, new_frame_padded)
+#             return new_frame_name
+#     return f'Base name: {base_name} Frame number: {frame_number} Camera number: {camera_number}'
 
 
 if __name__ == '__main__':
-
+    gather = {}
     if os.path.exists(L_ROOT):
         ALL_FRAMES = get_all_avifs(L_ROOT)
     else:
         ALL_FRAMES = get_all_avifs(R_ROOT)
 
     if ALL_FRAMES:
-        logger.info(f'Found {len(ALL_FRAMES)} frames to process')
         for frame in ALL_FRAMES:
             camera_number = get_camera_number_from_path(frame)
             frame_number = get_frame_number_from_path(frame)
-            print(f'Processing frame {frame_number}, camera {camera_number}')
-            try:
-                names = names_from_ranges(camera_number, frame)
-                if names:
-                    print(names)
-                    logger.info(f'Proposed: {frame} to {names}')
-                    # os.rename(frame, names)
-                    if os.path.exists(names):
-                        logger.info(f'Frame {names} exists!')
-            except:
-                pass
-    else:
-        logger.warning('No frames found to process')
-        sys.exit(1)
+            base_name = os.path.basename(frame)
+            if camera_number in CAMERA_UPDATE_TABLE.keys():
+               if camera_number not in gather.keys():
+                   gather[camera_number] = []
+               if frame_in_range(frame_number, CAMERA_UPDATE_TABLE[camera_number]):
+                   gather[camera_number].append(base_name)
+
+    for camera_number, frames in gather.items():
+        logger.info(f'Camera number: {camera_number}')
+        for frame in frames:
+            logger.info(f'Frame: {frame}')
+
+    #     logger.info(f'Found {len(ALL_FRAMES)} frames to process')
+    #     for frame in ALL_FRAMES:
+    #         camera_number = get_camera_number_from_path(frame)
+    #         frame_number = get_frame_number_from_path(frame)
+    #         print(f'Processing frame {frame_number}, camera {camera_number}')
+    #         try:
+    #             names = names_from_ranges(camera_number, frame)
+    #             if names:
+    #                 print(names)
+    #                 logger.info(f'Proposed: {frame} to {names}')
+    #                 # os.rename(frame, names)
+    #                 if os.path.exists(names):
+    #                     logger.info(f'Frame {names} exists!')
+    #         except:
+    #             pass
+    # else:
+    #     logger.warning('No frames found to process')
+    #     sys.exit(1)
 
 
