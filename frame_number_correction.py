@@ -44,11 +44,11 @@ CAMERA_UPDATE_TABLE = {12: ((91, 194), (92, 195)),  # ((old range, new range), (
                        }
 
 def get_camera_number_from_path(avif_path):
-    # Extract the camera number from the mp4_path
+    # Extract the camera number from the mp4_path camera_02-EXP_eyebrow-00194.avif
     tokens = avif_path.split('/')
     for t in tokens:
         if 'camera' in t:
-            camera = t.split('_')[1]
+            camera = t.split('_')[1].split('-')[0]
             try:
                 return int(camera)
             except BaseException as e:
@@ -56,9 +56,9 @@ def get_camera_number_from_path(avif_path):
                 return None
 
 def get_frame_number_from_path(avif_path):
-    # Extract the frame number from the avif_path
+    # Extract the frame number from the avif_path camera_02-EXP_eyebrow-00194.avif
     base = os.path.basename(avif_path)
-    frame_number = base.split('-')[1].split('.')[0]
+    frame_number = base.split('-')[2].split('.')[0]
     try:
         return int(frame_number)
     except BaseException as e:
@@ -127,6 +127,16 @@ if __name__ == '__main__':
         logger.info(f'Camera number: {camera_number}')
         for frame in frames:
             logger.info(f'Frame: {frame}')
+
+'''
+Error extracting camera number from camera_02-EXP_eyebrow-00194.avif: invalid literal for int() with base 10: '02-EXP'
+Error extracting frame number from camera_02-EXP_eyebrow-00194.avif: invalid literal for int() with base 10: 'EXP_eyebrow'
+Error extracting camera number from camera_34-EXP_eyebrow-00648.avif: invalid literal for int() with base 10: '34-EXP'
+Error extracting frame number from camera_34-EXP_eyebrow-00648.avif: invalid literal for int() with base 10: 'EXP_eyebrow'
+Error extracting camera number from camera_41-EXP_eyebrow-00227.avif: invalid literal for int() with base 10: '41-EXP'
+Error extracting frame number from camera_41-EXP_eyebrow-00227.avif: invalid literal for int() with base 10: 'EXP_eyebrow'
+'''
+
 
     #     logger.info(f'Found {len(ALL_FRAMES)} frames to process')
     #     for frame in ALL_FRAMES:
