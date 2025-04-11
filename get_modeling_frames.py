@@ -71,22 +71,24 @@ def process_frames(frames_root, camera_numbers, frame_number, out_dir):
 
 if __name__ == '__main__':
     # Example usage
-    # frames_root = '/Users/spooky/Downloads/LA-data-frames/Model2/EXP_eye_neutral/'  # Root directory containing camera folders
-    frames_root = '/mnt/data/datasets/LA-data-frames/Model2/EXP_eye_neutral/'  # Root directory containing camera folders
-    camera_numbers = ['camera_01', 'camera_02', 'camera_03', 'camera_04',
-                      'camera_08', 'camera_09','camera_10', 'camera_11',
-                      'camera_12','camera_13','camera_14','camera_15',
-                      'camera_16', 'camera_17', 'camera_24', 'camera_25',
-                      'camera_26', 'camera_27','camera_29','camera_30',
-                      'camera_35', 'camera_36','camera_37','camera_38',
-                      'camera_39','camera_40', 'camera_49', 'camera_50',
-                      'camera_51', 'camera_52','camera_53', 'camera_54',
-                      'camera_60', 'camera_61', 'camera_62', 'camera_63',
-                      'camera_68', 'camera_87', ]  # List of camera numbers to process 60-63
+    frames_root = '/Users/spooky/Downloads/LA-data-frames/Model2/EXP_eye_neutral/'  # Root directory containing camera folders
+    # frames_root = '/mnt/data/datasets/LA-data-frames/Model2/EXP_eye_neutral/'  # Root directory containing camera folders
+    # camera_numbers = ['camera_01', 'camera_02', 'camera_03', 'camera_04',
+    #                   'camera_08', 'camera_09','camera_10', 'camera_11',
+    #                   'camera_12','camera_13','camera_14','camera_15',
+    #                   'camera_16', 'camera_17', 'camera_24', 'camera_25',
+    #                   'camera_26', 'camera_27','camera_29','camera_30',
+    #                   'camera_35', 'camera_36','camera_37','camera_38',
+    #                   'camera_39','camera_40', 'camera_49', 'camera_50',
+    #                   'camera_51', 'camera_52','camera_53', 'camera_54',
+    #                   'camera_60', 'camera_61', 'camera_62', 'camera_63',
+    #                   'camera_68', 'camera_87', ]  # List of camera numbers to process 60-63
+    # generate camera numbers from 01 to 87 as an array
+    camera_numbers = [f'camera_{str(i).zfill(2)}' for i in range(1, 88)]
 
-    frame_number = '00099'  # Frame number to look for
+    frame_number = '00012'  # Frame number to look for
     # out_dir = '/Users/spooky/Developer/facebuilder/Auto-Only-Plugin/alt_source/'  # Directory to save processed frames
-    out_dir = '~/modeling_frames/Model2/EXP_eye_neutral/'  # Directory to save processed frames
+    out_dir = '/Users/spooky/modeling_frames/Model2/EXP_eye_neutral/'  # Directory to save processed frames
   # Directory to save processed frames
 
     process_frames(frames_root, camera_numbers, frame_number, out_dir)
