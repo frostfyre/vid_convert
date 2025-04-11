@@ -44,21 +44,19 @@ CAMERA_UPDATE_TABLE = {12: ((91, 194), (92, 195)),  # ((old range, new range), (
                        }
 
 def get_camera_number_from_path(avif_path):
-    # Extract the camera number from the mp4_path camera_02-EXP_eyebrow-00194.avif
-    tokens = avif_path.split('/')
-    for t in tokens:
-        if 'camera' in t:
-            camera = t.split('_')[1].split('-')[0]
-            try:
-                return int(camera)
-            except BaseException as e:
-                logger.error(f'Error extracting camera number from {t}: {e}')
-                return None
+    # Extract the camera number from the avif path, filenames are similar to this camera_02-EXP_eyebrow-00194.avif
+    base = os.path.basename(avif_path)
+    camera_number = base.split('-')[0].split('_')[1]
+    try:
+        return int(camera_number)
+    except BaseException as e:
+        logger.error(f'Error extracting camera number from {base}: {e}')
+        return None
 
 def get_frame_number_from_path(avif_path):
-    # Extract the frame number from the avif_path camera_02-EXP_eyebrow-00194.avif
+    # Extract the frame number from the avif_path filenames look like camera_02-EXP_eyebrow-00194.avif
     base = os.path.basename(avif_path)
-    frame_number = base.split('-')[2].split('.')[0]
+    frame_number = base.split('-')[-1].split('.')[0]
     try:
         return int(frame_number)
     except BaseException as e:
