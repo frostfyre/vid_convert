@@ -55,7 +55,11 @@ def get_frame_number_from_path(avif_path):
     # Extract the frame number from the avif_path
     base = os.path.basename(avif_path)
     frame_number = base.split('-')[1].split('.')[0]
-    return int(frame_number)
+    try:
+        return int(frame_number)
+    except BaseException as e:
+        logger.error(f'Error extracting frame number from {base}: {e}')
+        return None
 
 def get_range_entry(camera_number):
     # Get the range entry for the given camera number
