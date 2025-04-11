@@ -49,7 +49,11 @@ def get_camera_number_from_path(avif_path):
     for t in tokens:
         if 'camera' in t:
             camera = t.split('_')[1]
-            return int(camera)
+            try:
+                return int(camera)
+            except BaseException as e:
+                logger.error(f'Error extracting camera number from {t}: {e}')
+                return None
 
 def get_frame_number_from_path(avif_path):
     # Extract the frame number from the avif_path
