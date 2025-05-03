@@ -41,10 +41,10 @@ def pad_frame_number(count, pad_length=5):
     return count_str
 
 
-def export_mp4_to_frames(mp4_path):
+def export_mp4_to_frames(mp4_path, src='/LA-data/', dst='/LA-data-frames/'):
     # load the mp4 file, output whole frames rotated 90 degrees clockwise
     # frames will be AVIF format
-    frames_path = os.path.dirname(mp4_path.replace('/LA-data/', '/LA-data-frames/'))
+    frames_path = os.path.dirname(mp4_path.replace(src, dst))
     if not os.path.exists(mp4_path):
         logger.error(f'Source not found: {mp4_path}')
         return
@@ -223,56 +223,74 @@ def get_all_pngs(folder):
     return png_files
 
 
+def cleaning_png_files(folder='/mnt/data/datasets/LA-data-frames/'):
+    # recursively find png files and convert them
+    files = find_png_files(folder)
+    _ = [convert_png_to_avif(file) for file in files]
+
+
+def mov_extract_frame(input_file, pose_name, model_name, frame_number):
+    # Open the video file
+    video = cv2.VideoCapture(input_file)
+
+    # derive file output path from input file
+    camera_number = input_file.split('/')[-1].split('-')[0]
+    pose = pose_name
+    model = model_name
+    count = pad_frame_number(frame_number)
+    frames_path = os.path.dirname(input_file.replace('/LA-round2/', '/LA-round2-frames/'))
+    output_file = f'{frames_path}/{pose}-{pad_frame_number(count)}.png'
+    avif_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.avif'
+    # Set the frame position
+    video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+
+    # Read the specific frame
+    success, frame = video.read()
+    if not success:
+        print("Failed to retrieve the frame.")
+        return
+
+    # Rotate the frame 90 degrees clockwise
+    rotated_frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+
+    # Save the frame as a PNG image using cv2
+    cv2.imwrite(output_file, rotated_frame)
+
+    # Release video capture
+    video.release()
+
+    # convert the PNG to AVIF
+    convert_png_to_avif(output_file)
+
+
+'''
+    print('Multiprocessing Video Captures')
+    start = time.time()
+    # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
+    vid_list = gather_mp4_files()
+    try:
+        multithreaded_video_processor(vid_list)
+    except BaseException as e:
+        logger.error(e)
+    end = time.time()
+    print((end - start), 'seconds')
+    logger.handlers[0].close()
+'''
+
 if __name__ == '__main__':
-
-    files = get_all_pngs('/mnt/data/datasets/LA-data-frames/')
-    # files = get_all_pngs('/Users/spooky/Downloads/LA-data-frames/')
-
-    for png in files:
-        mp4_path = get_mp4_from_png_path(png)
-        print(mp4_path)
-
-        png_name = os.path.basename(png)
-        frame_number = int(png_name.split('.')[0].split('-')[-1])
-        if os.path.exists(png) and os.path.exists(mp4_path):
-            os.remove(png)
-            logger.info(f'Removed {png}')
-            try:
-                process_single_frame(mp4_path, frame_number)
-            except BaseException as e:
-                print(f'Failed to process {png}:\n{e}')
-        else:
-            logger.error(f'File {png} exists {os.path.exists(png)}\n{mp4_path} exists {os.path.exists(mp4_path)}')
-    time.sleep(10)
-    # PNGs regenerated, convert to AVIF
-
-    for png in files:
-        try:
-            convert_png_to_avif(png)
-        except BaseException as e:
-            logger.error(f'Error converting {png} to AVIF:\n\t{e}')
-            pass
-        avif_name = png.replace('.png', '.avif')
-        print(f'AVIF output exists {avif_name}: {os.path.exists(avif_name)}')
-    time.sleep(10)
-
-    # should no longer be any PNGs
-    pngs = get_all_pngs('/mnt/data/datasets/LA-data-frames/')
-    if pngs:
-        print(f'Found {len(pngs)} PNG files')
-        for p in pngs:
-            print(p)
-
-    # print('Multiprocessing Video Captures')
-    # start = time.time()
-    # # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
-    # vid_list = gather_mp4_files()
-    # try:
-    #     multithreaded_video_processor(vid_list)
-    # except BaseException as e:
-    #     logger.error(e)
-    # end = time.time()
-    # print((end - start), 'seconds')
-    # logger.handlers[0].close()
-
-
+    neutral_pose_source = Path('/mnt/data/datasets/LA-round2/Neutral Pose/').as_posix()
+    # gather full path to MOV files
+    mov_files = [f'{neutral_pose_source}{f}' for f in os.listdir(neutral_pose_source) if f.endswith('.mov')]
+    if not os.path.exists(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/''')):
+        os.makedirs(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/'))
+    # convert MOV files to individual frames in AVIF format
+    for mov in mov_files:
+        # set the pose name
+        pose_name = 'neutral_face'
+        # get the model name from the MOV file name
+        model_name = 'maxime'
+        # extract frames from the MOV file
+        export_mp4_to_frames(mov, src='/LA-round2/', dst='/LA-round2-frames/')
+        # convert the frames to AVIF format
+        cleanup_png_files(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/'))
+    print('All Processing Complete')
