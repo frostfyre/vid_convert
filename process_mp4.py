@@ -259,7 +259,7 @@ def mov_extract_frame(input_file, pose_name, model_name, frame_number):
     video.release()
 
     # convert the PNG to AVIF
-    convert_png_to_avif(output_file)
+    #convert_png_to_avif(output_file)
 
 
 '''
@@ -291,5 +291,5 @@ if __name__ == '__main__':
         # extract frames from the MOV file
         export_mp4_to_frames(mov, src='/LA-round2/', dst='/LA-round2-frames/')
         # convert the frames to AVIF format
-        cleanup_png_files(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/'))
+        # cleanup_png_files(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/'))
     print('All Processing Complete')
