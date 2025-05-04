@@ -279,7 +279,7 @@ def mov_extract_frame(input_file, pose_name, model_name, frame_number):
 if __name__ == '__main__':
     neutral_pose_source = Path('/mnt/data/datasets/LA-round2/Neutral Pose/').as_posix()
     # gather full path to MOV files
-    mov_files = [f'{neutral_pose_source}{f}' for f in os.listdir(neutral_pose_source) if f.endswith('.mov')]
+    mov_files = [Path(f'{neutral_pose_source}/{f}') for f in os.listdir(neutral_pose_source) if f.endswith('.mov')]
     if not os.path.exists(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/''')):
         os.makedirs(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/'))
     # convert MOV files to individual frames in AVIF format
