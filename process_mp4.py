@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import cv2
 import time
-import pillow_avif
 import logging
 import sys
 
