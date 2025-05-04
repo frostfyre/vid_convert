@@ -69,11 +69,12 @@ def export_mp4_to_frames(mp4_path, src='/LA-data/', dst='/LA-data-frames/'):
                 cv2.imwrite(out_name, image)
                 # logger.debug(f'Extracted {out_name}, exists: {os.path.exists(out_name)}')
                 # logger.debug("generating AVIF")
-                convert_png_to_avif(out_name)
+                # convert_png_to_avif(out_name)
                 # logger.debug(f'Created {avif_name}, exists: {os.path.exists(avif_name)}')
                 # print('Read a new frame: ', success)
         except BaseException as e:
             logger.error(f'Error processing frame {count} from {mp4_path}:\n\t{e}')
+
         success, image = vidcap.read()
         count += 1
         # logger.debug(f'\tInner Loop Count: {count}, Out_name: {avif_name}')
