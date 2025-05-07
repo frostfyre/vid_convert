@@ -9,7 +9,7 @@ from pathlib import Path
 import logging
 import sys
 import time
-import pillow_avif
+
 
 logging.basicConfig(filename='alt_frame_processing.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
