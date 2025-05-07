@@ -43,6 +43,8 @@ def pad_frame_number(count, pad_length=5):
 def export_mp4_to_frames(mp4_path, src='/mnt/data/datasets/LA-round2-all/Selects\ Delivery/', dst='/mnt/data/datasets/LA-round2-frames/'):
     # load the mp4 file, output whole frames rotated 90 degrees clockwise
     # frames will be AVIF format
+    src = Path(src).as_posix()
+    dst = Path(dst).as_posix()
     frames_path = os.path.dirname(mp4_path.replace(src, dst))
     if not os.path.exists(mp4_path):
         logger.error(f'Source not found: {mp4_path}')
@@ -65,7 +67,7 @@ def export_mp4_to_frames(mp4_path, src='/mnt/data/datasets/LA-round2-all/Selects
             out_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.png'
             # avif_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.avif'
             image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-            if not os.path.exists(avif_name):
+            if not os.path.exists(out_name):
                 cv2.imwrite(out_name, image)
                 # logger.debug(f'Extracted {out_name}, exists: {os.path.exists(out_name)}')
                 # logger.debug("generating AVIF")
