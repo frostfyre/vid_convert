@@ -40,7 +40,7 @@ def pad_frame_number(count, pad_length=5):
     return count_str
 
 
-def export_mp4_to_frames(mp4_path, src='/LA-data/', dst='/LA-data-frames/'):
+def export_mp4_to_frames(mp4_path, src='/mnt/data/datasets/LA-round2-all/Selects\ Delivery/', dst='/mnt/data/datasets/LA-round2-frames/'):
     # load the mp4 file, output whole frames rotated 90 degrees clockwise
     # frames will be AVIF format
     frames_path = os.path.dirname(mp4_path.replace(src, dst))
@@ -63,7 +63,7 @@ def export_mp4_to_frames(mp4_path, src='/LA-data/', dst='/LA-data-frames/'):
     while success:
         try:
             out_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.png'
-            avif_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.avif'
+            # avif_name = f'{frames_path}/{pose}-{pad_frame_number(count)}.avif'
             image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
             if not os.path.exists(avif_name):
                 cv2.imwrite(out_name, image)
@@ -125,19 +125,18 @@ def multithreaded_video_processor(vid_list):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.map(export_mp4_to_frames, vid_list)
 
-def gather_mp4_files(project_root = '/mnt/data/datasets/LA-data/'):
+def gather_vid_files(project_root = '/mnt/data/datasets/LA-data/', extension='.mp4'):
     pose_sources = []
-    mp4_sources = []
-    model_sources = [f for f in os.listdir(project_root) if f.startswith('Model')]
+    vid_sources = []
     for model in model_sources:
         pose_sources.extend([f for f in os.listdir(f'{project_root}{model}/') if os.path.isdir(f'{project_root}{model}/{f}')])
         for pose in pose_sources:
             try:
-                mp4_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith('.mp4')])
+                vid_sources.extend([f for f in os.listdir(f'{project_root}{model}/{pose}/') if f.endswith(extension)])
             except:
                 logger.error(f'No mp4 files found in {project_root}{model}/{pose}/')
 
-    vid_list = [f'{project_root}{model}/{pose}/{mp4}' for mp4 in mp4_sources for pose in pose_sources for model in model_sources]
+    vid_list = [f'{project_root}{model}/{pose}/{vid}' for vid in vid_sources for pose in pose_sources for model in model_sources]
     logger.info(f'{len(model_sources)} models found')
     logger.info(f'{len(set(pose_sources))} poses found')
     logger.info(f'{len(vid_list)} mp4 files found')
@@ -145,9 +144,9 @@ def gather_mp4_files(project_root = '/mnt/data/datasets/LA-data/'):
     vid_list.sort()
     return vid_list
 
-    camera = mp4_path.split('/')[-1].split('-')[0]
-    pose = mp4_path.split('/')[-2]
-    model = mp4_path.split('/')[-3]
+    # camera = mp4_path.split('/')[-1].split('-')[0]
+    # pose = mp4_path.split('/')[-2]
+    # model = mp4_path.split('/')[-3]
 
 
 def process_single_frame(input_file, frame_number):
@@ -278,19 +277,23 @@ def mov_extract_frame(input_file, pose_name, model_name, frame_number):
 '''
 
 if __name__ == '__main__':
-    neutral_pose_source = Path('/mnt/data/datasets/LA-round2/Neutral Pose/').as_posix()
+    friday_shoot = '/mnt/data/datasets/LA-round2-all/Selects\ Delivery/'
+    # pose name is folder name
+    # each video file is prefixed with camera_number split at '-'
     # gather full path to MOV files
-    mov_files = [Path(f'{neutral_pose_source}/{f}').as_posix() for f in os.listdir(neutral_pose_source) if f.endswith('.mov')]
-    if not os.path.exists(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/''')):
-        os.makedirs(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/'))
-    # convert MOV files to individual frames in AVIF format
-    for mov in mov_files:
-        # set the pose name
-        pose_name = 'neutral_face'
-        # get the model name from the MOV file name
-        model_name = 'maxime'
-        # extract frames from the MOV file
-        export_mp4_to_frames(mov, src='/LA-round2/', dst='/LA-round2-frames/')
-        # convert the frames to AVIF format
-        # cleanup_png_files(neutral_pose_source.replace('/LA-round2/', '/LA-round2-frames/'))
+
+    poses = [f'{friday_shoot}/{pose}' for pose in os.listdir(friday_shoot) if os.path.isdir(f'{friday_shoot}/{pose}')]
+
+    # gather all VID files
+    vid_files = []
+    for pose in poses:
+        vid_files.extend([f'{pose}/{f}' for f in os.listdir(pose) if f.endswith('.mov')])
+
+    # target_folder
+    out_root = '/mnt/data/datasets/LA-round2-frames/'
+
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(export_mp4_to_frames, vid_files)
+
     print('All Processing Complete')
