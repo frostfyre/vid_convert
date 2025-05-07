@@ -43,8 +43,7 @@ def pad_frame_number(count, pad_length=5):
 def export_mp4_to_frames(mp4_path, src='"/mnt/data/datasets/LA-round2-all/Selects Delivery/"', dst='"/mnt/data/datasets/LA-round2-frames/"'):
     # load the mp4 file, output whole frames rotated 90 degrees clockwise
     # frames will be AVIF format
-    src = Path(src).as_posix()
-    dst = Path(dst).as_posix()
+    # mp4_path = mp4_path.replace(src, dst)
     frames_path = os.path.dirname(mp4_path.replace(src, dst))
     if not os.path.exists(mp4_path):
         logger.error(f'Source not found: {mp4_path}')
