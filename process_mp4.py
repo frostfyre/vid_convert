@@ -40,7 +40,7 @@ def pad_frame_number(count, pad_length=5):
     return count_str
 
 
-def export_mp4_to_frames(mp4_path, src='/mnt/data/datasets/LA-round2-all/Selects\ Delivery/', dst='/mnt/data/datasets/LA-round2-frames/'):
+def export_mp4_to_frames(mp4_path, src='"/mnt/data/datasets/LA-round2-all/Selects Delivery/"', dst='"/mnt/data/datasets/LA-round2-frames/"'):
     # load the mp4 file, output whole frames rotated 90 degrees clockwise
     # frames will be AVIF format
     src = Path(src).as_posix()
