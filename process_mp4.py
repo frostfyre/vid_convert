@@ -40,7 +40,7 @@ def pad_frame_number(count, pad_length=5):
     return count_str
 
 
-def export_mp4_to_frames(mp4_path, src='"/mnt/data/datasets/LA-round2-all/Selects Delivery/"', dst='"/mnt/data/datasets/LA-round2-frames/"'):
+def export_mp4_to_frames(mp4_path, src='/mnt/data/datasets/LA-round2-all/selects/', dst='/mnt/data/datasets/LA-round2-frames/'):
     # load the mp4 file, output whole frames rotated 90 degrees clockwise
     # frames will be AVIF format
     # mp4_path = mp4_path.replace(src, dst)
@@ -278,7 +278,7 @@ def mov_extract_frame(input_file, pose_name, model_name, frame_number):
 '''
 
 if __name__ == '__main__':
-    friday_shoot = '/mnt/data/datasets/LA-round2-all/Selects\ Delivery/'
+    friday_shoot = '/mnt/data/datasets/LA-round2-all/selects/'
     # pose name is folder name
     # each video file is prefixed with camera_number split at '-'
     # gather full path to MOV files
