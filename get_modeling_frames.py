@@ -3,18 +3,32 @@
 # allows for a list of specific camera numbers, and a frame number
 
 import os
-import cv2
+#import cv2
+import pillow_avif
 from PIL import Image
-from pathlib import Path
+import pillow_avif
+#from pathlib import Path
 import logging
 import sys
-import time
+#import time
 
 
 logging.basicConfig(filename='alt_frame_processing.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.FileHandler('alt_frame_processing.log'))
 logger.addHandler(logging.StreamHandler(sys.stdout))
+
+def avif_to_png(avif_path):
+    # Convert AVIF to PNG using pillow_avif
+    try:
+        im = Image.open(avif_path)
+        png_path = avif_path.replace('.avif', '.png')
+        im.save(png_path, 'PNG')
+        logger.info(f'Converted {avif_path} to {png_path}')
+        return png_path
+    except Exception as e:
+        logger.error(f'Error converting {avif_path} to PNG: {e}')
+        return None
 
 def convert_avif_to_png(image_in):
     if not os.path.exists(image_in):
@@ -57,9 +71,9 @@ def process_frames(frames_root, camera_numbers, frame_number, out_dir):
         # look for avif files in the camera folder
         for root, dirs, files in os.walk(camera_folder):
             for file in files:
-                if file.endswith('.avif') and f'-{frame_number}.' in file:
+                if file.endswith('.png') and f'-{frame_number}.' in file:
                     avif_path = os.path.join(root, file)
-                    convert_avif_to_png(avif_path)
+                    # convert_avif_to_png(avif_path)
                     png_path = avif_path.replace('.avif', '.png')
                     renamed_frame_path = rename_frame(png_path, camera_number)
                     logger.info(f'Processed frame: {renamed_frame_path}')
@@ -71,7 +85,8 @@ def process_frames(frames_root, camera_numbers, frame_number, out_dir):
 
 if __name__ == '__main__':
     # Example usage
-    frames_root = '/Users/spooky/Downloads/LA-data-frames/Model2/EXP_eye_neutral/'  # Root directory containing camera folders
+    model = 'Model4'  # Model name
+    frames_root = f'/Users/spooky/Downloads/M4_EXP_eye_neutral'  # Root directory containing camera folders
     # frames_root = '/mnt/data/datasets/LA-data-frames/Model2/EXP_eye_neutral/'  # Root directory containing camera folders
     # camera_numbers = ['camera_01', 'camera_02', 'camera_03', 'camera_04',
     #                   'camera_08', 'camera_09','camera_10', 'camera_11',
@@ -84,11 +99,13 @@ if __name__ == '__main__':
     #                   'camera_60', 'camera_61', 'camera_62', 'camera_63',
     #                   'camera_68', 'camera_87', ]  # List of camera numbers to process 60-63
     # generate camera numbers from 01 to 87 as an array
-    camera_numbers = [f'camera_{str(i).zfill(2)}' for i in range(1, 88)]
+    camera_numbers = [f'camera_{str(i).zfill(2)}' for i in range(1, 87)]
 
-    frame_number = '00012'  # Frame number to look for
+    frame_number = '00003'  # Frame number to look for
     # out_dir = '/Users/spooky/Developer/facebuilder/Auto-Only-Plugin/alt_source/'  # Directory to save processed frames
-    out_dir = '/Users/spooky/modeling_frames/Model2/EXP_eye_neutral/'  # Directory to save processed frames
+    out_dir = f'/Users/spooky/modeling_frames/{model}/EXP_eye_neutral/'  # Directory to save processed frames
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir, exist_ok=True)
   # Directory to save processed frames
 
     process_frames(frames_root, camera_numbers, frame_number, out_dir)
