@@ -1,4 +1,5 @@
 from PIL import Image
+import pillow_avif
 import os
 from pathlib import Path
 import cv2
@@ -110,7 +111,7 @@ def export_prores_to_frames(prores_path, src='/mnt/data/datasets/LA-round2-all/s
     if rotate:
         command = f'ffmpeg -i "{prores_path}" -vf "transpose=1" -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.png"'
     else:
-        command = f'ffmpeg -i "{prores_path}" -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.png"'
+        command = f'ffmpeg -i "{prores_path}" -vf colorspace=all=bt709:fast=1 -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.png"'
     logger.info(f'Extracting frames from {prores_path} to {frames_path}')
     os.system(command)
 
@@ -152,7 +153,16 @@ def find_png_files(folder):
 def cleanup_png_files(folder='/mnt/data/datasets/LA-data-frames/'):
     # recursively find png files and convert them
     files = find_png_files(folder)
-    _ = [convert_png_to_avif(file) for file in files]
+    # parallelize the conversion of PNG files to AVIF
+    logger.info(f'Found {len(files)} PNG files to convert in {folder}')
+    if not files:
+        logger.warning(f'No PNG files found in {folder}')
+        return
+    logger.info(f'Converting {len(files)} PNG files to AVIF in {folder}')
+    # convert each PNG file to AVIF
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor() as executor:
+        executor.map(convert_png_to_avif, files)
 
 
 def multithreaded_video_processor(vid_list):
