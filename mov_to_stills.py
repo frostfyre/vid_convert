@@ -94,9 +94,11 @@ def export_mp4_to_frames(mp4_path, src='/mnt/data/datasets/LA-round2-all/selects
     logger.info(f'Wrote {count} frames from {model} {pose} {camera} to:\n{frames_path}')
 
 
-def export_prores_to_frames(prores_path, src='/mnt/data/datasets/LA-round2-all/selects/', dst='/mnt/data/datasets/LA-round2-frames/', rotate=False):
+def export_prores_to_frames(prores_path, src='/mnt/data/datasets/LA-June', dst='/mnt/data/datasets/LA-June-frames', rotate=False):
     # using ffmpeg to extract frames from a ProRes file and write them to a folder
     frames_path = os.path.dirname(prores_path.replace(src, dst))
+    base_name = os.path.basename(prores_path).split('.')[0]
+    folder_name = f'{frames_path}/{base_name}'
     if not os.path.exists(prores_path):
         logger.error(f'Source not found: {prores_path}')
         return
@@ -104,14 +106,12 @@ def export_prores_to_frames(prores_path, src='/mnt/data/datasets/LA-round2-all/s
         os.makedirs(frames_path)
     # use ffmpeg to extract frames
     # frame output_name formatting: {frames_path}/{pose}-{pad_frame_number(count)}.png
-    base_name = os.path.basename(prores_path).split('.')[0]
-    folder_name = f'{frames_path}/{base_name}'
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
     if rotate:
-        command = f'ffmpeg -i "{prores_path}" -vf "transpose=1" -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.png"'
+        command = f'ffmpeg -i "{prores_path}" -vf "transpose=1" -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.avif"'
     else:
-        command = f'ffmpeg -i "{prores_path}" -vf colorspace=all=bt709:fast=1 -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.png"'
+        command = f'ffmpeg -i "{prores_path}" -vf colorspace=all=bt709:fast=1 -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.avif"'
     logger.info(f'Extracting frames from {prores_path} to {frames_path}')
     os.system(command)
 
@@ -370,5 +370,9 @@ if __name__ == '__main__':
     logger.info(f'Found {len(mov_files)} MOV files in {input_folder}')
     # process MOV files
     import concurrent.futures
+    logger.info('Futures initialized')
     with concurrent.futures.ThreadPoolExecutor() as executor:
+        logger.info(f'Processing {len(mov_files)} MOV files in {input_folder}')
         executor.map(export_prores_to_frames, mov_files)
+    logger.info('All MOV files exported successfully.')
+    cleaning_png_files(input_folder)
