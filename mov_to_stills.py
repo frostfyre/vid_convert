@@ -148,6 +148,8 @@ def export_prores_to_avif(video_path):
         if success:
             with open(os.path.join(output_folder, f"f{base_name}_{frame_idx:04d}.png"), "wb") as f:
                 f.write(encoded_image)
+        # wait until the file is written
+        time.sleep(0.1)  # Ensure the file is written before proceeding
         if os.path.getsize(os.path.join(output_folder, f"{base_name}_{frame_idx:04d}.png")) > 0:
             # Convert PNG to AVIF using Pillow
             avif_path = os.path.join(output_folder, f"{base_name}_{frame_idx:04d}.avif")
@@ -354,23 +356,7 @@ def mov_extract_frame(input_file, pose_name, model_name, frame_number):
     # Release video capture
     video.release()
 
-    # convert the PNG to AVIF
-    #convert_png_to_avif(output_file)
 
-
-'''
-    print('Multiprocessing Video Captures')
-    start = time.time()
-    # /Users/spooky/Downloads/LA-data/Model 1/EXP_cheek001  << for local testing
-    vid_list = gather_mp4_files()
-    try:
-        multithreaded_video_processor(vid_list)
-    except BaseException as e:
-        logger.error(e)
-    end = time.time()
-    print((end - start), 'seconds')
-    logger.handlers[0].close()
-'''
 
 if __name__ == '__main__':
 
