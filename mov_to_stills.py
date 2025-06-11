@@ -34,7 +34,7 @@ from multiprocessing import Pool
 def extract_frames_avif(input_file, output_dir):
     """ Extract frames from a ProRes .mov file and save as AVIF images. """
     os.makedirs(output_dir, exist_ok=True)
-    basename = os.path.basename(input_file).split('.')[0]
+    basename = os.path.basename(str(input_file)).split('.')[0]
     frame_num = 0
     while True:
         output_file = os.path.join(output_dir, basename, f"{basename}_{frame_num:04d}.avif")
