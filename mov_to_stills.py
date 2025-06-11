@@ -115,9 +115,15 @@ def export_prores_to_frames(prores_path, src='/mnt/data/datasets/LA-June', dst='
     os.system(command)
 
 
-def export_prores_to_avif(video_path, output_folder):
+def export_prores_to_avif(video_path):
     # Create output directory if it doesn't exist
-    os.makedirs(output_folder, exist_ok=True)
+    base_name = os.path.basename(video_path).split('.')[0]
+    dir_name = os.path.dirname(video_path)
+    output_folder = os.path.join(f'{dir_name}-frames/{base_name}')
+    if not os.path.exists(video_path):
+        logger.error(f'Source not found: {video_path}')
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder, exist_ok=True)
 
     # Open the ProRes video file
     cap = cv2.VideoCapture(video_path)
@@ -126,7 +132,9 @@ def export_prores_to_avif(video_path, output_folder):
     if not cap.isOpened():
         print(f"Error: Unable to open video file {video_path}")
         return
-
+    # how many frames in the video?
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    logger.info(f'Extracting {total_frames} frames from {video_path} to {output_folder}')
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -138,15 +146,15 @@ def export_prores_to_avif(video_path, output_folder):
         # Encode as AVIF image
         success, encoded_image = cv2.imencode(".png", frame)
         if success:
-            with open(os.path.join(output_folder, f"frame_{frame_idx:04d}.png"), "wb") as f:
+            with open(os.path.join(output_folder, f"f{base_name}_{frame_idx:04d}.png"), "wb") as f:
                 f.write(encoded_image)
-        if os.path.getsize(os.path.join(output_folder, f"frame_{frame_idx:04d}.png")) > 0:
+        if os.path.getsize(os.path.join(output_folder, f"{base_name}_{frame_idx:04d}.png")) > 0:
             # Convert PNG to AVIF using Pillow
-            avif_path = os.path.join(output_folder, f"frame_{frame_idx:04d}.avif")
-            img = Image.open(os.path.join(output_folder, f"frame_{frame_idx:04d}.png"))
+            avif_path = os.path.join(output_folder, f"{base_name}_{frame_idx:04d}.avif")
+            img = Image.open(os.path.join(output_folder, f"{base_name}_{frame_idx:04d}.png"))
             img.save(avif_path, format='AVIF', quality_mode='q', quality_level=100)
             # Remove the PNG file after conversion
-            os.remove(os.path.join(output_folder, f"frame_{frame_idx:04d}.png"))
+            os.remove(os.path.join(output_folder, f"{base_name}_{frame_idx:04d}.png"))
 
         else:
             print(f"Warning: Frame {frame_idx} is empty, skipping conversion.")
@@ -365,34 +373,6 @@ def mov_extract_frame(input_file, pose_name, model_name, frame_number):
 '''
 
 if __name__ == '__main__':
-    # friday_shoot = '/mnt/data/datasets/LA-round2-all/selects/'
-    # pose name is folder name
-    # each video file is prefixed with camera_number split at '-'
-    # gather full path to MOV files
-
-    # poses = [f'{friday_shoot}/{pose}' for pose in os.listdir(friday_shoot) if os.path.isdir(f'{friday_shoot}/{pose}')]
-
-    # gather all VID files
-    # vid_files = []
-    # for pose in poses:
-    #     vid_files.extend([f'{pose}/{f}' for f in os.listdir(pose) if f.endswith('.mov')])
-
-    # target_folder
-    # out_root = '/Users/spooky/Downloads/M4_frames'
-    # pose_folder = '/Users/spooky/Downloads/cali1-rotated/pro-res'
-    # if not os.path.exists(out_root):
-    #     os.makedirs(out_root)
-    # # gather vid files
-    # vid_files = [f'{pose_folder}/{f}' for f in os.listdir(pose_folder) if f.endswith('.mov')]
-    # print(f'Found {len(vid_files)} MOV files in {pose_folder}')
-    #
-    # import concurrent.futures
-    # with concurrent.futures.ThreadPoolExecutor() as executor:
-    #     executor.map(export_prores_to_frames, vid_files)
-    #
-    # print('All Processing Complete')
-
-    # make this script a command line tool that takes an input folder path as an argument, along with an optional rotate flag
 
     import argparse
     parser = argparse.ArgumentParser(description='Process MP4 files to extract frames.')
@@ -415,6 +395,7 @@ if __name__ == '__main__':
     logger.info('Futures initialized')
     with concurrent.futures.ThreadPoolExecutor() as executor:
         logger.info(f'Processing {len(mov_files)} MOV files in {input_folder}')
-        executor.map(export_prores_to_frames, mov_files)
+        executor.map(export_prores_to_avif, mov_files)
     logger.info('All MOV files exported successfully.')
-    cleaning_png_files(input_folder)
+
+
