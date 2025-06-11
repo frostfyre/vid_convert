@@ -34,14 +34,14 @@ from multiprocessing import Pool
 def extract_frames_avif(input_file, output_dir):
     """ Extract frames from a ProRes .mov file and save as AVIF images. """
     os.makedirs(output_dir, exist_ok=True)
-    basename = os.path.basename(str(input_file)).split('.')[0]
+    basename = str(os.path.basename(input_file)).split('.')[0]
     frame_num = 0
     while True:
-        output_file = os.path.join(output_dir, basename, f"{basename}_{frame_num:04d}.avif")
+        output_file = os.path.join(output_dir, f"{basename}-{frame_num:04d}.avif")
         cmd = [
             "ffmpeg", "-i", input_file, "-vf",
             f"select='eq(n,{frame_num})',colorspace=bt709",
-            "-vsync", "vfr", "-pix_fmt", "yuv420p", "-quality", "100", output_file,
+            "-vsync", "vfr", "-pix_fmt", "yuv420p", "-quality", "50", output_file,
             "-y"
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
@@ -67,6 +67,6 @@ if __name__ == "__main__":
     source = '/mnt/data-local/LA-June/Body'
     # recusrsively find all .mov files in the source directory
     input_files = [os.path.join(root, file) for root, _, files in os.walk(source) for file in files if file.endswith('.mov')]
-    output_dir = '/mnt/data/datasets/LA-June-frames-avif/Body'
-    extract_frames_avif(input_files[:2], output_dir)
+    output_dir = '/mnt/data/datasets/LA-June-frames/'
+    extract_frames_avif(input_file, output_dir)
 
