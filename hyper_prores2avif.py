@@ -58,11 +58,16 @@ def process_multiple_files(input_files):
     processes = []
 
     for input_file in input_files:
+        print(f"Processing {input_file}")
         p = multiprocessing.Process(target=extract_frames, args=(input_file,))
         p.start()
         processes.append(p)
 
     for p in processes:
+        # report progress every 10 seconds
+        while p.is_alive():
+            time.sleep(10)
+            logging.info(f"Process {p.name} is still running...")
         p.join()
 
 
@@ -90,4 +95,3 @@ if __name__ == "__main__":
     else:
         print(f"Found {len(input_files)} .mov files to process.")
         process_multiple_files(input_files)
-        print("All frames extraction complete.")
