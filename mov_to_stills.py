@@ -12,7 +12,7 @@ def extract_frames_avif(input_file, output_dir):
     while True:
         output_file = os.path.join(output_dir, f"{basename}-{frame_num:04d}.avif")
         cmd = [
-            "ffmpeg", "-i", input_file, "-vf",
+            "ffmpeg", "-hwaccel cuda", "-i", input_file, "-vf",
             f"select='eq(n,{frame_num})',colorspace=bt709",
             "-vsync", "vfr", "-pix_fmt", "yuv420p", "-quality", "50", output_file,
             "-y"
