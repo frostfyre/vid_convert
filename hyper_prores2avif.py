@@ -53,7 +53,16 @@ if __name__ == "__main__":
     parser.add_argument('input_folder', type=str, help='Folder containing ProRes .mov files')
     args = parser.parse_args()
     input_folder = args.input_folder
-    input_files = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if f.endswith('.mov')]
+    # recursively find all .mov files in the input folder
+    if not os.path.exists(input_folder):
+        print(f"Input folder does not exist: {input_folder}")
+        exit(1)
+    if not os.path.isdir(input_folder):
+        print(f"Input path is not a directory: {input_folder}")
+        exit(1)
+    print(f"Searching for .mov files in {input_folder}...")
+    input_files= [os.path.join(root, file) for root, _, files in os.walk(input_folder) for file in files if file.endswith('.mov')]
+
     if not input_files:
         print(f"No .mov files found in {input_folder}")
     else:
