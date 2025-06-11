@@ -59,7 +59,7 @@ def extract_frames_avif(input_file, output_dir):
 def process_multiple_files(input_files):
     """ Run frame extraction on multiple files in parallel. """
     with Pool(os.cpu_count()) as pool:
-        pool.starmap(extract_frames_avif, [(file, f"frames_avif/{os.path.splitext(os.path.basename(file))[0]}") for file in input_files])
+        pool.starmap(extract_frames_avif, [(file, f"/mnt/data/datasets/LA-June-frames/{os.path.splitext(os.path.basename(file))[0]}") for file in input_files])
 
 
 if __name__ == "__main__":
@@ -67,6 +67,5 @@ if __name__ == "__main__":
     source = '/mnt/data-local/LA-June/Body'
     # recusrsively find all .mov files in the source directory
     input_files = [os.path.join(root, file) for root, _, files in os.walk(source) for file in files if file.endswith('.mov')]
-    output_dir = '/mnt/data/datasets/LA-June-frames/'
-    extract_frames_avif(input_file, output_dir)
+    process_multiple_files(input_files)
 
