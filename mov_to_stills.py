@@ -43,6 +43,7 @@ if __name__ == "__main__":
     # Example usage: Process a single .mov file
     source = '/mnt/data-local/LA-June/Body'
     # recusrsively find all .mov files in the source directory
-    input_files = [os.path.join(root, file) for root, _, files in os.walk(source) for file in files if file.endswith('.mov')]
+    input_files= [os.path.join(root, file) for root, _, files in os.walk(source) for file in files if file.endswith('.mov')]
+    print(f"Found {len(input_files)} .mov files to process.")
     process_multiple_files(input_files)
 
