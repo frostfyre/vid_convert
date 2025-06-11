@@ -109,8 +109,8 @@ def export_prores_to_frames(prores_path, src='/mnt/data/datasets/LA-June', dst='
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
-    # ffmpeg -i input.mp4 -vf "colorspace=bt709" -vsync vfr -c:v libaom-av1 output_%04d.avif
-    command = f'ffmpeg -i "{prores_path}" -vf "colorspace=all=bt709" -vsync vfr -c:v libaom-av1 "{folder_name}/{base_name}_%04d.avif"'
+    # ffmpeg -i input.mp4 -f image2 -frames:v 1 -c:v librav1e -speed 6 output_frames/frame_%04d.avif
+    command = f'ffmpeg -i "{prores_path}" -f image2 -frames: v1 -vf "colorspace=all=bt709" "{folder_name}/{base_name}_%04d.avif"'
     logger.info(f'Extracting frames from {prores_path} to {frames_path}')
     os.system(command)
 
