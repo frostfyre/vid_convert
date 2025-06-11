@@ -1,56 +1,71 @@
 import os
 import subprocess
 import multiprocessing
-from multiprocessing import Pool
+import time
+import logging
 
-# Explicitly set the multiprocessing start method to 'spawn'
+# Configure logging
+logging.basicConfig(
+    filename="avif_extraction.log",
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
+# Ensure proper multiprocessing start method
 multiprocessing.set_start_method("spawn", force=True)
 
-def extract_frame(frame_num, input_file, output_dir):
-    """ Extracts a single frame as AVIF, skipping if already processed. """
-    os.makedirs(output_dir, exist_ok=True)
-    basename = str(os.path.basename(input_file)).split('.')[0]
-    output_file = os.path.join(output_dir, f"{basename}-{frame_num:04d}.avif")
+def extract_frames(input_file):
 
-    if os.path.exists(output_file):
-        print(f"Skipping frame {frame_num} (already processed) for {input_file}")
-        return
-
-    cmd = [
-        "ffmpeg", "-hwaccel cuda", "-i", input_file, "-vf",
-        f"select='eq(n,{frame_num})',colorspace=bt709",
-        "-vsync", "vfr", "-pix_fmt", "yuv420p", "-quality", "50", output_file,
-        "-y"
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-    if result.returncode != 0:
-        print(f"Stopping at frame {frame_num} for {input_file} (end of file reached)")
-        return
-
-    print(f"Extracted frame {frame_num} from {input_file}")
-
-
-def extract_frames_parallel(input_file):
-    """ Extracts all frames from an input file in parallel, skipping existing frames. """
+    """ Extract frames from an input file as AVIF, tracking estimated time. """
     output_dir = f"/mnt/data/datasets/LA-June-frames/{os.path.splitext(os.path.basename(input_file))[0]}"
     os.makedirs(output_dir, exist_ok=True)
+    basename = str(os.path.basename(input_file)).split('.')[0]
+    frame_num = 0
+    start_time = time.time()
 
-    num_workers = min(os.cpu_count(), 120)
-    frame_numbers = range(150000)  # Arbitrary large number, stops when FFmpeg fails
+    while True:
+        output_file = os.path.join(output_dir, f"{basename}-{frame_num:04d}.avif")
+        if os.path.exists(output_file):
+            logging.info(f"Skipping frame {frame_num} (already processed) for {input_file}")
+            frame_num += 1
+            continue
 
-    with Pool(num_workers) as pool:
-        pool.starmap(extract_frame, [(frame_num, input_file, output_dir) for frame_num in frame_numbers])
+        cmd = [
+            "ffmpeg", "-hwaccel cuda", "-i", input_file, "-vf",
+            f"select='eq(n,{frame_num})',colorspace=bt709",
+            "-vsync", "vfr", "-pix_fmt", "yuv420p", "-quality", "50", output_file,
+            "-y"
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
 
-    # Use spawn method for multiprocessing compatibility
-    with Pool(num_workers) as pool:
-        pool.starmap(extract_frame, [(frame_num, input_file, output_dir) for frame_num in frame_numbers])
+        if result.returncode != 0:
+            logging.warning(f"Stopping at frame {frame_num} for {input_file} (end of file reached)")
+            break
 
+        elapsed_time = time.time() - start_time
+        avg_time_per_frame = elapsed_time / (frame_num + 1)
+        estimated_remaining_time = avg_time_per_frame * (150000 - frame_num)
+
+        logging.info(f"Extracted frame {frame_num} from {input_file} | Est. Remaining Time: {estimated_remaining_time:.2f} sec")
+
+        frame_num += 1
+
+    total_time = time.time() - start_time
+    logging.info(f"Frame extraction complete for {input_file} | Total Time: {total_time:.2f} sec")
 
 def process_multiple_files(input_files):
-    """ Process multiple MOV files in parallel, each extracting frames in parallel. """
-    with multiprocessing.Pool(len(input_files)) as pool:
-        pool.map(extract_frames_parallel, input_files)
+    """ Process multiple MOV files in parallel, tracking time per file. """
+    processes = []
+
+    for input_file in input_files:
+        p = multiprocessing.Process(target=extract_frames, args=(input_file,))
+        p.start()
+        processes.append(p)
+
+    for p in processes:
+        p.join()
+
+
 
 if __name__ == "__main__":
     # Example usage: Process a list of .mov files, ALLOW USER TO SUPPLY A FOLDER FULL OF MOV FILES
