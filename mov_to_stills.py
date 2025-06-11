@@ -115,6 +115,39 @@ def export_prores_to_frames(prores_path, src='/mnt/data/datasets/LA-June', dst='
     os.system(command)
 
 
+def export_prores_to_avif(video_path, output_folder):
+    # Create output directory if it doesn't exist
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Open the ProRes video file
+    cap = cv2.VideoCapture(video_path)
+    frame_idx = 0
+
+    if not cap.isOpened():
+        print(f"Error: Unable to open video file {video_path}")
+        return
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break  # Exit if no more frames
+
+        # Convert frame to BT.709 color space
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # OpenCV default is BGR, converting to RGB
+
+        # Encode as AVIF image
+        success, encoded_image = cv2.imencode(".avif", frame)
+        if success:
+            with open(os.path.join(output_folder, f"frame_{frame_idx:04d}.avif"), "wb") as f:
+                f.write(encoded_image)
+
+        frame_idx += 1
+
+    cap.release()
+    print(f"Extraction complete! {frame_idx} frames saved to {output_folder}")
+
+
+
 # def get_all_mp4s(folder):
 
 # def get_all_avifs(folder):
