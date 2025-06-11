@@ -12,7 +12,7 @@ def extract_frames_avif(input_file, output_dir):
     while True:
         output_file = os.path.join(output_dir, f"{basename}-{frame_num:04d}.avif")
         if os.path.exists(output_file):
-            print(f"Skipping frame {frame_num} (already processed) for {input_file}")
+            # print(f"Skipping frame {frame_num} (already processed) for {input_file}")
             frame_num += 1
             continue
         cmd = [
@@ -21,6 +21,7 @@ def extract_frames_avif(input_file, output_dir):
             "-vsync", "vfr", "-pix_fmt", "yuv420p", "-quality", "50", output_file,
             "-y"
         ]
+        print(f'Running command: {" ".join(cmd)}')
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         # Stop when FFmpeg fails to extract a frame
