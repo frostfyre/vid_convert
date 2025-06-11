@@ -136,10 +136,20 @@ def export_prores_to_avif(video_path, output_folder):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # OpenCV default is BGR, converting to RGB
 
         # Encode as AVIF image
-        success, encoded_image = cv2.imencode(".avif", frame)
+        success, encoded_image = cv2.imencode(".png", frame)
         if success:
-            with open(os.path.join(output_folder, f"frame_{frame_idx:04d}.avif"), "wb") as f:
+            with open(os.path.join(output_folder, f"frame_{frame_idx:04d}.png"), "wb") as f:
                 f.write(encoded_image)
+        if os.path.getsize(os.path.join(output_folder, f"frame_{frame_idx:04d}.png")) > 0:
+            # Convert PNG to AVIF using Pillow
+            avif_path = os.path.join(output_folder, f"frame_{frame_idx:04d}.avif")
+            img = Image.open(os.path.join(output_folder, f"frame_{frame_idx:04d}.png"))
+            img.save(avif_path, format='AVIF', quality_mode='q', quality_level=100)
+            # Remove the PNG file after conversion
+            os.remove(os.path.join(output_folder, f"frame_{frame_idx:04d}.png"))
+
+        else:
+            print(f"Warning: Frame {frame_idx} is empty, skipping conversion.")
 
         frame_idx += 1
 
