@@ -49,7 +49,7 @@ def extract_frames_parallel(input_file):
 
 def process_multiple_files(input_files):
     """ Process multiple MOV files in parallel, each extracting frames in parallel. """
-    with Pool(len(input_files)) as pool:
+    with multiprocessing.Pool(len(input_files)) as pool:
         pool.map(extract_frames_parallel, input_files)
 
 if __name__ == "__main__":
