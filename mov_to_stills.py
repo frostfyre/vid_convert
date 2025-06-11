@@ -11,6 +11,10 @@ def extract_frames_avif(input_file, output_dir):
     frame_num = 0
     while True:
         output_file = os.path.join(output_dir, f"{basename}-{frame_num:04d}.avif")
+        if os.path.exists(output_file):
+            print(f"Skipping frame {frame_num} (already processed) for {input_file}")
+            frame_num += 1
+            continue
         cmd = [
             "ffmpeg", "-hwaccel cuda", "-i", input_file, "-vf",
             f"select='eq(n,{frame_num})',colorspace=bt709",
