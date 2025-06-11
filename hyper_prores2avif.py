@@ -1,7 +1,10 @@
 import os
 import subprocess
+import multiprocessing
 from multiprocessing import Pool
 
+# Explicitly set the multiprocessing start method to 'spawn'
+multiprocessing.set_start_method("spawn", force=True)
 
 def extract_frame(frame_num, input_file, output_dir):
     """ Extracts a single frame as AVIF, skipping if already processed. """
@@ -36,6 +39,10 @@ def extract_frames_parallel(input_file):
     num_workers = min(os.cpu_count(), 120)
     frame_numbers = range(150000)  # Arbitrary large number, stops when FFmpeg fails
 
+    with Pool(num_workers) as pool:
+        pool.starmap(extract_frame, [(frame_num, input_file, output_dir) for frame_num in frame_numbers])
+
+    # Use spawn method for multiprocessing compatibility
     with Pool(num_workers) as pool:
         pool.starmap(extract_frame, [(frame_num, input_file, output_dir) for frame_num in frame_numbers])
 
