@@ -108,10 +108,9 @@ def export_prores_to_frames(prores_path, src='/mnt/data/datasets/LA-June', dst='
     # frame output_name formatting: {frames_path}/{pose}-{pad_frame_number(count)}.png
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
-    if rotate:
-        command = f'ffmpeg -i "{prores_path}" -vf "transpose=1" -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.avif"'
-    else:
-        command = f'ffmpeg -i "{prores_path}" -vf colorspace=all=bt709:fast=1 -q:v 2 "{frames_path}/{base_name}/{base_name}_%04d.avif"'
+
+    # ffmpeg -i input.mp4 -vf "colorspace=all=bt709:fast=1" -vsync 0 output_%04d.avif
+    command = f'ffmpeg -i "{prores_path}" -vf "colorspace=all=bt709:fast=1" -vsync 0 "{folder_name}/{base_name}_%04d.avif"'
     logger.info(f'Extracting frames from {prores_path} to {frames_path}')
     os.system(command)
 
