@@ -26,7 +26,7 @@ def extract_frames(input_file):
     while True:
         output_file = os.path.join(output_dir, f"{basename}-{frame_num:04d}.avif")
         if os.path.exists(output_file):
-            logging.info(f"Skipping frame {frame_num} (already processed) for {input_file}")
+            # logging.info(f"Skipping frame {frame_num} (already processed) for {input_file}")
             frame_num += 1
             continue
 
@@ -39,14 +39,14 @@ def extract_frames(input_file):
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         if result.returncode != 0:
-            logging.warning(f"EOF:\t{frame_num}\t{input_file}")
+            logging.warning(f"EOF:\t{frame_num}\t{input_file}\tRETURNCODE:\t{result.returncode}")
             break
 
         elapsed_time = time.time() - start_time
         avg_time_per_frame = elapsed_time / (frame_num + 1)
         estimated_remaining_time = avg_time_per_frame * (150000 - frame_num)
 
-        logging.info(f"Extracted frame {frame_num} from {input_file} | Est. Remaining Time: {estimated_remaining_time:.2f} sec")
+        # logging.info(f"Extracted frame {frame_num} from {input_file} | Est. Remaining Time: {estimated_remaining_time:.2f} sec")
 
         frame_num += 1
 
