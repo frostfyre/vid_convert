@@ -30,8 +30,14 @@ def extract_frames(input_file):
             frame_num += 1
             continue
 
+        # cmd = [
+        #     "ffmpeg", "-hwaccel cuda", "-i", input_file, "-vf",
+        #     f"select='eq(n,{frame_num})',colorspace=bt709",
+        #     "-vsync", "vfr", "-pix_fmt", "yuv420p", "-quality", "50", output_file,
+        #     "-y"
+        # ]
         cmd = [
-            "ffmpeg", "-hwaccel cuda", "-i", input_file, "-vf",
+            "ffmpeg", "-i", input_file, "-vf",
             f"select='eq(n,{frame_num})',colorspace=bt709",
             "-vsync", "vfr", "-pix_fmt", "yuv420p", "-quality", "50", output_file,
             "-y"
