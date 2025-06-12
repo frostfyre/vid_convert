@@ -39,7 +39,7 @@ def extract_frames(input_file):
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         if result.returncode != 0:
-            logging.warning(f"Stopping at frame {frame_num} for {input_file} (end of file reached)")
+            logging.warning(f"EOF:\t{frame_num}\t{input_file}")
             break
 
         elapsed_time = time.time() - start_time
